@@ -1,5 +1,6 @@
 package vn.hoidanit.jobhunter.service;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
@@ -25,6 +26,10 @@ public class UserService {
 
     public Optional<User> findUserById(long id) {
         return this.userRepository.findById(id);
+    }
+
+    public List<User> fetchAllUser() {
+        return this.userRepository.findAll();
     }
 
 }

@@ -47,4 +47,12 @@ public class User {
                 + getClass() + ", hashCode()=" + hashCode() + ", toString()=" + super.toString() + "]";
     }
 
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
+
 }
