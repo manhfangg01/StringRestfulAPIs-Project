@@ -4,14 +4,14 @@ import java.lang.reflect.Array;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
-
-import com.mysql.cj.xdevapi.JsonString;
 
 import vn.hoidanit.jobhunter.domain.User;
 import vn.hoidanit.jobhunter.service.UserService;
@@ -26,54 +26,52 @@ public class UserController {
         this.userService = userService;
     }
 
-    @GetMapping("/user/{id}")
-    public User getUser(@PathVariable("id") long id) {
+    @GetMapping("/users/{id}")
+    public ResponseEntity<User> getUser(@PathVariable("id") long id) {
         Optional<User> user = this.userService.findUserById(id);
-        if (user.isPresent()) {
-            return user.get();
-        }
-        return null;
+        return ResponseEntity.ok(user.get());
     }
 
-    @GetMapping("/user")
-    public List<User> getAllUser() {
+    @GetMapping("/users")
+    public ResponseEntity<List<User>> getAllUser() {
         List<User> allUsers = this.userService.fetchAllUser();
-        return allUsers;
+        return ResponseEntity.ok(allUsers);
     }
 
-    @PostMapping("/user")
-    public User CreateNewUser(@RequestBody User postManUser) {
+    @PostMapping("/users")
+    public ResponseEntity<User> CreateNewUser(@RequestBody User postManUser) {
         User user = new User();
         user.setEmail(postManUser.getEmail());
         user.setName(postManUser.getName());
         user.setPassword(postManUser.getPassword());
         User newUser = this.userService.handleSaveUser((user));
-        return newUser;
+        // return ResponseEntity.status(HttpStatus.CREATED).body(newUser); // Cách code
+        // truyền thống
+        return ResponseEntity.created(null).body(newUser); // Cách code theo builder pattern
 
     }
 
-    @PutMapping("/user")
-    public User putMethodName(@RequestBody User updatedUser) {
+    @PutMapping("/users")
+    public ResponseEntity<User> updateUser(@RequestBody User updatedUser) {
         Optional<User> optionalUser = this.userService.findUserById(updatedUser.getId());
         User currentUser = optionalUser.get();
         currentUser.setEmail(updatedUser.getEmail());
         currentUser.setName(updatedUser.getName());
         currentUser.setPassword(updatedUser.getPassword());
-        return this.userService.handleSaveUser(currentUser);
+        User updateData = this.userService.handleSaveUser(currentUser);
+        // return ResponseEntity.status(HttpStatus.OK).body(updateData);
+        return ResponseEntity.ok(updateData);
     }
 
     // Patch cũng giống như Put nhưng sẽ ghi đè tất cả thông tin tin thay vi từng
     // trường -> Không an toàn, nhưng vẫn quan trọng vào khối code bên trong khối có
     // Annotation @Put
-    @DeleteMapping("/user/{id}")
-    public String deleteUser(@PathVariable("id") long id) {
+    @DeleteMapping("/users/{id}")
+    public ResponseEntity<User> deleteUser(@PathVariable("id") long id) { // Nếu ResponseEntity<Void> -> Không cần trả
+                                                                          // về body
         Optional<User> user = this.userService.findUserById(id);
-        if (user.isPresent()) {
-            this.userService.handleDeleteUser(user.get());
-        } else {
-            return "xoa k dc";
-        }
-        return "xoa thanh cong";
+        // return ResponseEntity.status(HttpStatus.OK).body(user.get());
+        return ResponseEntity.ok(user.get());
     }
 
 }
