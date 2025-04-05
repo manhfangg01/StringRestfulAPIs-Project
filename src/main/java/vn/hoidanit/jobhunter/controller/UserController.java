@@ -1,12 +1,12 @@
 package vn.hoidanit.jobhunter.controller;
 
-import java.lang.reflect.Array;
 import java.util.List;
 import java.util.Optional;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -15,7 +15,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import vn.hoidanit.jobhunter.domain.User;
 import vn.hoidanit.jobhunter.service.UserService;
-import org.springframework.web.bind.annotation.RequestParam;
+import vn.hoidanit.jobhunter.service.error.IdInvalidException;
+
 import org.springframework.web.bind.annotation.PutMapping;
 
 @RestController
@@ -67,8 +68,14 @@ public class UserController {
     // trường -> Không an toàn, nhưng vẫn quan trọng vào khối code bên trong khối có
     // Annotation @Put
     @DeleteMapping("/users/{id}")
-    public ResponseEntity<User> deleteUser(@PathVariable("id") long id) { // Nếu ResponseEntity<Void> -> Không cần trả
-                                                                          // về body
+    public ResponseEntity<User> deleteUser(@PathVariable("id") long id) throws IdInvalidException { // Nếu
+                                                                                                    // ResponseEntity<Void>
+                                                                                                    // -> Không cần trả
+        // về body
+
+        if (id > 1500) {
+            throw new IdInvalidException("id khong lon hon 1500");
+        }
         Optional<User> user = this.userService.findUserById(id);
         // return ResponseEntity.status(HttpStatus.OK).body(user.get());
         return ResponseEntity.ok(user.get());
