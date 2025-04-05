@@ -28,7 +28,10 @@ public class UserController {
     }
 
     @GetMapping("/users/{id}")
-    public ResponseEntity<User> getUser(@PathVariable("id") long id) {
+    public ResponseEntity<User> getUser(@PathVariable("id") long id) throws IdInvalidException {
+        if (id > 1500) {
+            throw new IdInvalidException("id khong lon hon 1500");
+        }
         Optional<User> user = this.userService.findUserById(id);
         return ResponseEntity.ok(user.get());
     }
@@ -72,7 +75,6 @@ public class UserController {
                                                                                                     // ResponseEntity<Void>
                                                                                                     // -> Không cần trả
         // về body
-
         if (id > 1500) {
             throw new IdInvalidException("id khong lon hon 1500");
         }
