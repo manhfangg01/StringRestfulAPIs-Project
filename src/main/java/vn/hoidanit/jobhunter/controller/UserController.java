@@ -17,18 +17,28 @@ import org.springframework.web.bind.annotation.RestController;
 import vn.hoidanit.jobhunter.domain.User;
 import vn.hoidanit.jobhunter.service.UserService;
 import vn.hoidanit.jobhunter.service.error.IdInvalidException;
+import vn.hoidanit.jobhunter.service.googleService.ApiService;
 
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
 public class UserController {
     private final UserService userService;
     private final PasswordEncoder passwordEncoder;
+    private final ApiService apiService;
 
-    public UserController(UserService userService, PasswordEncoder passwordEncoder) {
+    public UserController(UserService userService, PasswordEncoder passwordEncoder, ApiService apiService) {
         this.userService = userService;
         this.passwordEncoder = passwordEncoder;
+        this.apiService = apiService;
     }
+
+    // @GetMapping("/api/users")
+    // public ResponseEntity<List<User>> getApiData() {
+    // List<User> users = apiService.getUsers();
+    // return ResponseEntity.ok(users);
+    // }
 
     @GetMapping("/users/{id}")
     public ResponseEntity<User> getUser(@PathVariable("id") long id) throws IdInvalidException {
