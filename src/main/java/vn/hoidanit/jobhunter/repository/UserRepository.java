@@ -8,4 +8,5 @@ import vn.hoidanit.jobhunter.domain.User;
  * Spring Data JPA repository for the {@link Authority} entity.
  */
 public interface UserRepository extends JpaRepository<User, Long> {
+    public User findByEmail(String email);
 }

@@ -20,13 +20,18 @@ public class SecurityConfiguration {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+                .csrf(c -> c.disable()) // Ở mô hình stateless không dùng token "csrf"
                 .authorizeHttpRequests(
                         authz ->
                         // prettier-ignore
                         authz
                                 .requestMatchers("/", "/api/users").permitAll()
                                 .anyRequest()
-                                .authenticated())
+                                .permitAll()
+                // .authenticated()
+                )
+                // .formLogin(f -> f.permitAll()) // Có form hay không
+                .formLogin(f -> f.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
         return http.build();

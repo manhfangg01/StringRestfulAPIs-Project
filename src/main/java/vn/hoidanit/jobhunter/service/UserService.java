@@ -32,4 +32,8 @@ public class UserService {
         return this.userRepository.findAll();
     }
 
+    public User handleGetUserByUserName(String username) {
+        return this.userRepository.findByEmail(username);
+    }
+
 }
