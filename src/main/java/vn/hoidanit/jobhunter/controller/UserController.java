@@ -16,8 +16,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import vn.hoidanit.jobhunter.domain.User;
 import vn.hoidanit.jobhunter.service.UserService;
-import vn.hoidanit.jobhunter.service.error.IdInvalidException;
 import vn.hoidanit.jobhunter.service.googleService.ApiService;
+import vn.hoidanit.jobhunter.util.error.IdInvalidException;
 
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -41,12 +41,14 @@ public class UserController {
     // }
 
     @GetMapping("/users/{id}")
-    public ResponseEntity<User> getUser(@PathVariable("id") long id) throws IdInvalidException {
+    public ResponseEntity<User> getUser(@PathVariable("id") long id)
+            throws vn.hoidanit.jobhunter.util.error.IdInvalidException {
         if (id > 1500) {
-            throw new IdInvalidException("id khong lon hon 1500");
+            throw new vn.hoidanit.jobhunter.util.error.IdInvalidException("id khong lon hon 1500");
+        } else {
+            Optional<User> user = this.userService.findUserById(id);
+            return ResponseEntity.ok(user.get());
         }
-        Optional<User> user = this.userService.findUserById(id);
-        return ResponseEntity.ok(user.get());
     }
 
     @GetMapping("/users")

@@ -12,7 +12,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
 
 import jakarta.servlet.http.HttpServletResponse;
 import vn.hoidanit.jobhunter.domain.RestResponse;
-import vn.hoidanit.jobhunter.service.error.IdInvalidException;
+import vn.hoidanit.jobhunter.util.error.IdInvalidException;
 
 @RestControllerAdvice
 public class FormatRestResponse implements ResponseBodyAdvice<Object> {
@@ -25,7 +25,6 @@ public class FormatRestResponse implements ResponseBodyAdvice<Object> {
     @Override
     public Object beforeBodyWrite(Object body, MethodParameter returnType, MediaType selectedContentType,
             Class selectedConverterType, ServerHttpRequest request, ServerHttpResponse response) {
-
         HttpServletResponse servletResponse = ((ServletServerHttpResponse) response).getServletResponse();
         int status = servletResponse.getStatus();
         RestResponse<Object> res = new RestResponse<Object>();
@@ -34,7 +33,7 @@ public class FormatRestResponse implements ResponseBodyAdvice<Object> {
             res.setMessage("Call Api Successfully");
             res.setData(body);
         } else {
-            return body;
+            return body; // Vứt body(Object) ra cho GobalException xử lý
         }
 
         return res;
