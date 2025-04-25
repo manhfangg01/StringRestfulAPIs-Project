@@ -4,6 +4,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -35,6 +36,8 @@ public class AuthController {
 
         // create token
         String accessToken = this.securityUtil.createToken(authentication);
+        SecurityContextHolder.getContext().setAuthentication(authentication); // Lưu thông tin người dùng đang đăng nhập
+                                                                              // vào trong SecurityContext
         RestLoginDTO res = new RestLoginDTO();
         res.setAccessToken(accessToken);
         return ResponseEntity.ok(res);
