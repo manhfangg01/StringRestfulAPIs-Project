@@ -5,14 +5,21 @@ import org.springframework.web.bind.annotation.RestController;
 import jakarta.validation.Valid;
 import vn.hoidanit.jobhunter.domain.Company;
 import vn.hoidanit.jobhunter.service.CompanyService;
+import vn.hoidanit.jobhunter.util.error.IdInvalidException;
 
 import java.time.Instant;
+import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 
 @RestController
 public class CompanyController {
@@ -24,21 +31,30 @@ public class CompanyController {
 
     @PostMapping("/companies")
     public ResponseEntity<Company> createACompany(@Valid @RequestBody Company company) {
-        // Company newCompany = new Company();
-        // newCompany.setName(company.getName());
-        // newCompany.setAddress(company.getAddress());
-        // newCompany.setDescription(company.getDescription());
-        // newCompany.setLogo(company.getLogo());
-        // newCompany.setCreatedAt(Instant.now());
-        // newCompany.setUpdatedAt(null);
-        // newCompany.setCreatedBy(null);
-        // newCompany.setUpdatedBy(null);
-
         this.companyService.handleSaveCompany(company);
         return ResponseEntity.status(HttpStatus.CREATED).body(company);
-        // ** Nhiệm vụ set các giá trị không có trong body JSON thường sẽ do các
-        // annotation + callback function của hibernate đảm nhận (trừ trường id (auto))
-        // -> xem ở module Company
+    }
+
+    @GetMapping("/companies")
+    public ResponseEntity<List<Company>> getAllCompany() {
+        List<Company> companies = this.companyService.handleFetchAllCompanies();
+        return ResponseEntity.ok(companies);
+    }
+
+    @PutMapping("/companies")
+    public ResponseEntity<Company> updateCompany(@RequestBody Company checkCompany) throws IdInvalidException {
+        Company updatedCompany = this.companyService.updateCompany(checkCompany);
+        if (updatedCompany == null) {
+            throw new IdInvalidException("Không tồn tại công ty phù hợp ứng với công ty muốn cập nhật");
+        } else {
+            return ResponseEntity.ok(updatedCompany);
+        }
+    }
+
+    @DeleteMapping("/companies/{id}")
+    public ResponseEntity<Void> deteleCompany(@PathVariable("id") long id) {
+        this.companyService.handleDeleteCompany(id);
+        return ResponseEntity.ok(null);
     }
 
 }

@@ -62,7 +62,9 @@ public class Company {
 
     @PreUpdate
     public void handleBeforeUpdateOfACompany() {
-        this.updatedBy = "Phan Van Manh";
+        this.updatedBy = SecurityUtil.getCurrentUserLogin().isPresent() == true
+                ? SecurityUtil.getCurrentUserLogin().get()
+                : "?";
         this.updatedAt = Instant.now();
     }
 }

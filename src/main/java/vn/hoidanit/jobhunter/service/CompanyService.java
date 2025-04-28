@@ -1,5 +1,8 @@
 package vn.hoidanit.jobhunter.service;
 
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.stereotype.Service;
 
 import vn.hoidanit.jobhunter.domain.Company;
@@ -16,4 +19,32 @@ public class CompanyService {
     public void handleSaveCompany(Company company) {
         this.companyRepository.save(company);
     }
+
+    public List<Company> handleFetchAllCompanies() {
+        return this.companyRepository.findAll();
+    }
+
+    public Optional<Company> handleFetchCompanyById(long id) {
+        return this.companyRepository.findById(id);
+    }
+
+    public Company updateCompany(Company updateCompany) {
+        Optional<Company> checkCompany = handleFetchCompanyById(updateCompany.getId());
+        if (checkCompany.isPresent()) {
+            Company realCompany = checkCompany.get();
+            realCompany.setName(updateCompany.getName());
+            realCompany.setAddress(updateCompany.getAddress());
+            realCompany.setDescription(updateCompany.getDescription());
+            realCompany.setLogo(updateCompany.getLogo());
+            handleSaveCompany(realCompany);
+            return realCompany;
+        } else
+            return null;
+
+    }
+
+    public void handleDeleteCompany(long id) {
+        this.companyRepository.deleteById(id);
+    }
+
 }
