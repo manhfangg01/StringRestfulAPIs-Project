@@ -3,6 +3,8 @@ package vn.hoidanit.jobhunter.service;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import vn.hoidanit.jobhunter.domain.User;
@@ -30,6 +32,11 @@ public class UserService {
 
     public List<User> fetchAllUser() {
         return this.userRepository.findAll();
+    }
+
+    public Page<User> fetchAllUserWithPagination(Pageable pageable) {
+        return this.userRepository.findAll(pageable);
+
     }
 
     public User handleGetUserByUserName(String username) {

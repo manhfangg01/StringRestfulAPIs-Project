@@ -4,12 +4,18 @@ import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
 import vn.hoidanit.jobhunter.domain.Company;
+import vn.hoidanit.jobhunter.domain.dto.Meta;
+import vn.hoidanit.jobhunter.domain.dto.ResultPaginationDTO;
 import vn.hoidanit.jobhunter.service.CompanyService;
 import vn.hoidanit.jobhunter.util.error.IdInvalidException;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
@@ -36,9 +42,32 @@ public class CompanyController {
     }
 
     @GetMapping("/companies")
-    public ResponseEntity<List<Company>> getAllCompany() {
-        List<Company> companies = this.companyService.handleFetchAllCompanies();
-        return ResponseEntity.ok(companies);
+    public ResponseEntity<ResultPaginationDTO> getAllCompany(
+            @RequestParam("current") Optional<String> currentOptional,
+            @RequestParam("pageSize") Optional<String> pageSizeOptional) {
+        String currentPage = currentOptional.isPresent() ? currentOptional.get() : "";
+        String numberPage = pageSizeOptional.isPresent() ? pageSizeOptional.get() : "";
+        ResultPaginationDTO result = new ResultPaginationDTO();
+        System.out.println("---------------------------------- cr:" + currentPage + " num:" + numberPage);
+        if (currentPage.equals("") || numberPage.equals("")) {
+            result.setMeta(null);
+            result.setResult(this.companyService.handleFetchAllCompanies());
+            return ResponseEntity.ok(result);
+        }
+        int pageNumber = Integer.parseInt(currentPage);
+        int pageSize = Integer.parseInt(numberPage);
+        Pageable pageable = PageRequest.of(pageNumber - 1, pageSize);
+        Page<Company> companyPaginating = this.companyService.handleFetchAllCompanyWithPagination(pageable);
+        Meta mt = new Meta();
+
+        mt.setPage(companyPaginating.getNumber());
+        mt.setPageSize(companyPaginating.getSize());
+
+        mt.setPages(companyPaginating.getTotalPages());
+        mt.setTotal(companyPaginating.getTotalElements());
+        result.setMeta(mt);
+        result.setResult(companyPaginating.getContent());
+        return ResponseEntity.ok(result);
     }
 
     @PutMapping("/companies")
