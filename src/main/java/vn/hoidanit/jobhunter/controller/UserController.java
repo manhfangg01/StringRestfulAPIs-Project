@@ -60,35 +60,19 @@ public class UserController {
     public ResponseEntity<ResultPaginationDTO> getAllUser(
             @RequestParam("current") Optional<String> currentOptional,
             @RequestParam("pageSize") Optional<String> pageSizeOptional) {
-        // Lưu ý trong postman không nên điền param thẳng lên URL mà nên điền trong mục
-        // "Param "
 
-        String sCurrent = currentOptional.isPresent() ? currentOptional.get() : "";
-        String sPageSize = pageSizeOptional.isPresent() ? pageSizeOptional.get() : "";
-        ResultPaginationDTO result = new ResultPaginationDTO();
-        if (sCurrent.equals("") || sPageSize.equals("")) {
-            result.setMeta(null);
-            result.setResult(this.userService.fetchAllUser());
-            return ResponseEntity.ok(result);
+        String sCurrent = currentOptional.orElse("");
+        String sPageSize = pageSizeOptional.orElse("");
+
+        ResultPaginationDTO result;
+        if (sCurrent.isEmpty() || sPageSize.isEmpty()) {
+            result = userService.fetchAllUserWithoutPagination();
+        } else {
+            int pageNumber = Integer.parseInt(sCurrent);
+            int pageSize = Integer.parseInt(sPageSize);
+            result = userService.fetchAllUserWithPagination(pageNumber, pageSize);
         }
-        int pageNumber = Integer.parseInt(sCurrent);
-        int pageSize = Integer.parseInt(sPageSize);
-        Pageable pageable = PageRequest.of(pageNumber - 1, pageSize);
-        // Lưu ý với sCurrent tính từ 0 nên phải nếu bảng ít phần tử thì truyền một sẽ
-        // không ra --> bắt đầu từ 0 / Trong trường hợp muốn bắt đầu từ một thì
-        // pageNumber-1
 
-        Page<User> pageUser = this.userService.fetchAllUserWithPagination(pageable);
-        Meta mt = new Meta();
-
-        mt.setPage(pageUser.getNumber());
-        mt.setPageSize(pageUser.getSize());
-
-        mt.setPages(pageUser.getTotalPages());
-        mt.setTotal(pageUser.getTotalElements());
-
-        result.setMeta(mt);
-        result.setResult(pageUser.getContent());
         return ResponseEntity.ok(result);
     }
 

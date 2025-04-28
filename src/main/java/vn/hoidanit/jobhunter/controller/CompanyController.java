@@ -45,28 +45,19 @@ public class CompanyController {
     public ResponseEntity<ResultPaginationDTO> getAllCompany(
             @RequestParam("current") Optional<String> currentOptional,
             @RequestParam("pageSize") Optional<String> pageSizeOptional) {
-        String currentPage = currentOptional.isPresent() ? currentOptional.get() : "";
-        String numberPage = pageSizeOptional.isPresent() ? pageSizeOptional.get() : "";
-        ResultPaginationDTO result = new ResultPaginationDTO();
-        System.out.println("---------------------------------- cr:" + currentPage + " num:" + numberPage);
-        if (currentPage.equals("") || numberPage.equals("")) {
-            result.setMeta(null);
-            result.setResult(this.companyService.handleFetchAllCompanies());
-            return ResponseEntity.ok(result);
+
+        String currentPage = currentOptional.orElse("");
+        String numberPage = pageSizeOptional.orElse("");
+
+        ResultPaginationDTO result;
+        if (currentPage.isEmpty() || numberPage.isEmpty()) {
+            result = companyService.fetchAllCompaniesWithoutPagination();
+        } else {
+            int pageNumber = Integer.parseInt(currentPage);
+            int pageSize = Integer.parseInt(numberPage);
+            result = companyService.fetchAllCompaniesWithPagination(pageNumber, pageSize);
         }
-        int pageNumber = Integer.parseInt(currentPage);
-        int pageSize = Integer.parseInt(numberPage);
-        Pageable pageable = PageRequest.of(pageNumber - 1, pageSize);
-        Page<Company> companyPaginating = this.companyService.handleFetchAllCompanyWithPagination(pageable);
-        Meta mt = new Meta();
 
-        mt.setPage(companyPaginating.getNumber());
-        mt.setPageSize(companyPaginating.getSize());
-
-        mt.setPages(companyPaginating.getTotalPages());
-        mt.setTotal(companyPaginating.getTotalElements());
-        result.setMeta(mt);
-        result.setResult(companyPaginating.getContent());
         return ResponseEntity.ok(result);
     }
 

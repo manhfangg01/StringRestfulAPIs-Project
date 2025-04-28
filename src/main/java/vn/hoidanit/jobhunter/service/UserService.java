@@ -4,10 +4,13 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import vn.hoidanit.jobhunter.domain.User;
+import vn.hoidanit.jobhunter.domain.dto.Meta;
+import vn.hoidanit.jobhunter.domain.dto.ResultPaginationDTO;
 import vn.hoidanit.jobhunter.repository.UserRepository;
 
 @Service
@@ -37,6 +40,29 @@ public class UserService {
     public Page<User> fetchAllUserWithPagination(Pageable pageable) {
         return this.userRepository.findAll(pageable);
 
+    }
+
+    public ResultPaginationDTO fetchAllUserWithoutPagination() {
+        ResultPaginationDTO result = new ResultPaginationDTO();
+        result.setMeta(null);
+        result.setResult(this.fetchAllUser()); // gọi phương thức cũ
+        return result;
+    }
+
+    public ResultPaginationDTO fetchAllUserWithPagination(int pageNumber, int pageSize) {
+        Pageable pageable = PageRequest.of(pageNumber - 1, pageSize);
+        Page<User> pageUser = this.fetchAllUserWithPagination(pageable);
+
+        Meta meta = new Meta();
+        meta.setPage(pageUser.getNumber() + 1);
+        meta.setPageSize(pageUser.getSize());
+        meta.setPages(pageUser.getTotalPages());
+        meta.setTotal(pageUser.getTotalElements());
+
+        ResultPaginationDTO result = new ResultPaginationDTO();
+        result.setMeta(meta);
+        result.setResult(pageUser.getContent());
+        return result;
     }
 
     public User handleGetUserByUserName(String username) {

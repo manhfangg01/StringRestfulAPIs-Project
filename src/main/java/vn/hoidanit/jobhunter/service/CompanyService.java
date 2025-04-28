@@ -4,10 +4,13 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import vn.hoidanit.jobhunter.domain.Company;
+import vn.hoidanit.jobhunter.domain.dto.Meta;
+import vn.hoidanit.jobhunter.domain.dto.ResultPaginationDTO;
 import vn.hoidanit.jobhunter.repository.CompanyRepository;
 
 @Service
@@ -52,6 +55,29 @@ public class CompanyService {
     // Pagination
     public Page<Company> handleFetchAllCompanyWithPagination(Pageable pageable) {
         return this.companyRepository.findAll(pageable);
+    }
+
+    public ResultPaginationDTO fetchAllCompaniesWithoutPagination() {
+        ResultPaginationDTO result = new ResultPaginationDTO();
+        result.setMeta(null);
+        result.setResult(this.handleFetchAllCompanies()); // phương thức cũ đã có
+        return result;
+    }
+
+    public ResultPaginationDTO fetchAllCompaniesWithPagination(int pageNumber, int pageSize) {
+        Pageable pageable = PageRequest.of(pageNumber - 1, pageSize);
+        Page<Company> companyPage = this.handleFetchAllCompanyWithPagination(pageable);
+
+        Meta meta = new Meta();
+        meta.setPage(companyPage.getNumber() + 1); // +1 nếu muốn page client tính từ 1
+        meta.setPageSize(companyPage.getSize());
+        meta.setPages(companyPage.getTotalPages());
+        meta.setTotal(companyPage.getTotalElements());
+
+        ResultPaginationDTO result = new ResultPaginationDTO();
+        result.setMeta(meta);
+        result.setResult(companyPage.getContent());
+        return result;
     }
 
 }
