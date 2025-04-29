@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import vn.hoidanit.jobhunter.domain.Company;
@@ -71,6 +72,22 @@ public class CompanyService {
         Meta meta = new Meta();
         meta.setPage(companyPage.getNumber() + 1); // +1 nếu muốn page client tính từ 1
         meta.setPageSize(companyPage.getSize());
+        meta.setPages(companyPage.getTotalPages());
+        meta.setTotal(companyPage.getTotalElements());
+
+        ResultPaginationDTO result = new ResultPaginationDTO();
+        result.setMeta(meta);
+        result.setResult(companyPage.getContent());
+        return result;
+    }
+
+    public ResultPaginationDTO fetchAllCompaniesWithPaginationAndSpecification(Specification<Company> spec,
+            Pageable pageable) {
+
+        Page<Company> companyPage = this.companyRepository.findAll(spec, pageable);
+        Meta meta = new Meta();
+        meta.setPage(pageable.getPageNumber() + 1); // +1 nếu muốn page client tính từ 1
+        meta.setPageSize(pageable.getPageSize());
         meta.setPages(companyPage.getTotalPages());
         meta.setTotal(companyPage.getTotalElements());
 

@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import vn.hoidanit.jobhunter.domain.User;
@@ -49,6 +50,10 @@ public class UserService {
         return result;
     }
 
+    public User handleGetUserByUserName(String username) {
+        return this.userRepository.findByEmail(username);
+    }
+
     public ResultPaginationDTO fetchAllUserWithPagination(int pageNumber, int pageSize) {
         Pageable pageable = PageRequest.of(pageNumber - 1, pageSize);
         Page<User> pageUser = this.fetchAllUserWithPagination(pageable);
@@ -65,8 +70,17 @@ public class UserService {
         return result;
     }
 
-    public User handleGetUserByUserName(String username) {
-        return this.userRepository.findByEmail(username);
+    public ResultPaginationDTO fetchAllUserWithPaginationAndSpecification(Specification<User> spec, Pageable pageable) {
+        Page<User> pageUserWithFilter = this.userRepository.findAll(spec, pageable);
+        Meta meta = new Meta();
+        meta.setPage(pageable.getPageNumber() + 1);
+        meta.setPageSize(pageable.getPageSize());
+        meta.setPages(pageUserWithFilter.getTotalPages());
+        meta.setTotal(pageUserWithFilter.getTotalElements() - 1);
+        ResultPaginationDTO result = new ResultPaginationDTO();
+        result.setMeta(meta);
+        result.setResult(pageUserWithFilter.getContent());
+        return result;
     }
 
 }

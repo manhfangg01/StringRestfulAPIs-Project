@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -15,19 +16,24 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.turkraft.springfilter.boot.Filter;
 
 import vn.hoidanit.jobhunter.domain.User;
 import vn.hoidanit.jobhunter.domain.dto.Meta;
 import vn.hoidanit.jobhunter.domain.dto.ResultPaginationDTO;
 import vn.hoidanit.jobhunter.service.UserService;
 import vn.hoidanit.jobhunter.service.googleService.ApiService;
+import vn.hoidanit.jobhunter.util.annotation.ApiMessage;
 import vn.hoidanit.jobhunter.util.error.IdInvalidException;
 
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
+@RequestMapping("/api/v1")
 public class UserController {
     private final UserService userService;
     private final PasswordEncoder passwordEncoder;
@@ -56,24 +62,35 @@ public class UserController {
         }
     }
 
-    @GetMapping("/users")
-    public ResponseEntity<ResultPaginationDTO> getAllUser(
-            @RequestParam("current") Optional<String> currentOptional,
-            @RequestParam("pageSize") Optional<String> pageSizeOptional) {
+    // @GetMapping("/users")
+    // public ResponseEntity<ResultPaginationDTO> getAllUser(
+    // @RequestParam("current") Optional<String> currentOptional,
+    // @RequestParam("pageSize") Optional<String> pageSizeOptional) {
 
-        String sCurrent = currentOptional.orElse("");
-        String sPageSize = pageSizeOptional.orElse("");
+    // String sCurrent = currentOptional.orElse("");
+    // String sPageSize = pageSizeOptional.orElse("");
 
-        ResultPaginationDTO result;
-        if (sCurrent.isEmpty() || sPageSize.isEmpty()) {
-            result = userService.fetchAllUserWithoutPagination();
-        } else {
-            int pageNumber = Integer.parseInt(sCurrent);
-            int pageSize = Integer.parseInt(sPageSize);
-            result = userService.fetchAllUserWithPagination(pageNumber, pageSize);
-        }
+    // ResultPaginationDTO result;
+    // if (sCurrent.isEmpty() || sPageSize.isEmpty()) {
+    // result = userService.fetchAllUserWithoutPagination();
+    // } else {
+    // int pageNumber = Integer.parseInt(sCurrent);
+    // int pageSize = Integer.parseInt(sPageSize);
+    // result = userService.fetchAllUserWithPagination(pageNumber, pageSize);
+    // }
 
-        return ResponseEntity.ok(result);
+    // return ResponseEntity.ok(result);
+    // }
+
+    @GetMapping("users")
+    @ApiMessage("Fetch All Users")
+
+    public ResponseEntity<ResultPaginationDTO> getAllUsersWithPaginationAndSpecification(
+            @Filter Specification<User> spec,
+            Pageable pageable) {
+        // Pageable tự handle page, size, sort, và filter, trong trường hợp không truyền
+        // lên URL cững sẽ handle được
+        return ResponseEntity.ok(this.userService.fetchAllUserWithPaginationAndSpecification(spec, pageable));
     }
 
     @PostMapping("/users")
