@@ -35,7 +35,8 @@ public class SecurityConfiguration {
                         authz ->
                         // prettier-ignore
                         authz
-                                .requestMatchers("/", "/api/users", "/login", "/register").permitAll()
+                                .requestMatchers("/", "/api/users", "api/v1/login", "api/v1/register", "api/v1/users")
+                                .permitAll()
                                 .anyRequest()
                                 .authenticated())
                 .oauth2ResourceServer((oauth2) -> oauth2.jwt(Customizer.withDefaults())

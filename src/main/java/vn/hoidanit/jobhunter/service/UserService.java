@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import vn.hoidanit.jobhunter.domain.User;
 import vn.hoidanit.jobhunter.domain.dto.Meta;
 import vn.hoidanit.jobhunter.domain.dto.ResultPaginationDTO;
+import vn.hoidanit.jobhunter.domain.dto.UserDTO;
 import vn.hoidanit.jobhunter.repository.UserRepository;
 
 @Service
@@ -71,16 +72,41 @@ public class UserService {
     }
 
     public ResultPaginationDTO fetchAllUserWithPaginationAndSpecification(Specification<User> spec, Pageable pageable) {
-        Page<User> pageUserWithFilter = this.userRepository.findAll(spec, pageable);
+        // Lấy dữ liệu phân trang từ repository
+        Page<User> userPage = this.userRepository.findAll(spec, pageable);
+
+        // Chuyển đổi sang DTO
+        List<UserDTO> userDTOs = userPage.getContent()
+                .stream()
+                .map(this::convertToUserDTO)
+                .toList();
+
+        // Tạo metadata phân trang
         Meta meta = new Meta();
-        meta.setPage(pageable.getPageNumber() + 1);
-        meta.setPageSize(pageable.getPageSize());
-        meta.setPages(pageUserWithFilter.getTotalPages());
-        meta.setTotal(pageUserWithFilter.getTotalElements() - 1);
-        ResultPaginationDTO result = new ResultPaginationDTO();
-        result.setMeta(meta);
-        result.setResult(pageUserWithFilter.getContent());
-        return result;
+        meta.setPage(userPage.getNumber() + 1); // PageNumber bắt đầu từ 0
+        meta.setPageSize(userPage.getSize());
+        meta.setPages(userPage.getTotalPages());
+        meta.setTotal(userPage.getTotalElements()); // Không trừ 1
+
+        return new ResultPaginationDTO(meta, userDTOs);
+    }
+
+    // Phương thức chuyển đổi User -> UserDTO
+    private UserDTO convertToUserDTO(User user) {
+        UserDTO dto = new UserDTO();
+        dto.setId(user.getId());
+        dto.setName(user.getName());
+        dto.setEmail(user.getEmail());
+        dto.setAge(user.getAge());
+        dto.setGender(user.getGender());
+        dto.setAddress(user.getAddress());
+        dto.setCreatedAt(user.getCreatedAt());
+        dto.setUpdatedAt(user.getUpdatedAt()); // Lưu ý chính tả (UpdatedAt -> updatedAt)
+        return dto;
+    }
+
+    public boolean checkExistedEmail(String email) {
+        return this.userRepository.findByEmail(email) != null;
     }
 
 }
