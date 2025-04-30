@@ -1,26 +1,26 @@
 package vn.hoidanit.jobhunter.util;
 
-import org.hibernate.boot.model.source.spi.SizeSource;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.core.MethodParameter;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.http.server.ServletServerHttpResponse;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
-
-import jakarta.servlet.http.HttpServletResponse;
 import vn.hoidanit.jobhunter.domain.RestResponse;
 import vn.hoidanit.jobhunter.util.annotation.ApiMessage;
-import vn.hoidanit.jobhunter.util.error.IdInvalidException;
 
 @RestControllerAdvice
 public class FormatRestResponse implements ResponseBodyAdvice<Object> {
 
+    private final ObjectMapper mapper = new ObjectMapper();
+
     @Override
     public boolean supports(MethodParameter returnType, Class converterType) {
-        return true; // return true để xử lý Response(Điều kiện sử dụng)
+        return true; // xử lý cho mọi controller method
     }
 
     @Override
@@ -31,33 +31,38 @@ public class FormatRestResponse implements ResponseBodyAdvice<Object> {
             Class selectedConverterType,
             ServerHttpRequest request,
             ServerHttpResponse response) {
+
         HttpServletResponse servletResponse = ((ServletServerHttpResponse) response).getServletResponse();
         int status = servletResponse.getStatus();
-        RestResponse<Object> res = new RestResponse<Object>();
-        res.setStatusCode(status);
+
+        // Nếu trả về String → phải trả chuỗi JSON chứ không return object
         if (body instanceof String) {
-            return body;
+            RestResponse<Object> wrapped = new RestResponse<>();
+            wrapped.setStatusCode(status);
+            wrapped.setData(body);
+            wrapped.setMessage(getMessage(returnType, status));
+            try {
+                return mapper.writeValueAsString(wrapped);
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException("Error serializing response", e);
+            }
         }
-        if (status >= 200 && status <= 399) {
-            // Case Success
-            res.setMessage("Call Api Successfully");
-            res.setData(body);
-        } else {
-            // Lấy ra thông báo của annotation của class đó, nếu không có Annotation thì sẽ
-            // trả về CALL API SUCCESS như bình thường
-            res.setData(body);
-            ApiMessage message = returnType.getMethodAnnotation(ApiMessage.class);
-            res.setMessage(message != null ? message.value() : "CALL API SUCCESS");
-        }
+
+        // Trả về object JSON như bình thường
+        RestResponse<Object> res = new RestResponse<>();
+        res.setStatusCode(status);
+        res.setData(body);
+        res.setMessage(getMessage(returnType, status));
+
         return res;
     }
 
+    private String getMessage(MethodParameter returnType, int status) {
+        if (status >= 400) {
+            return "CALL API FAILED";
+        }
+
+        ApiMessage annotation = returnType.getMethodAnnotation(ApiMessage.class);
+        return (annotation != null) ? annotation.value() : "CALL API SUCCESS";
+    }
 }
-// Object body: body of Response
-// MethodParameter returnType: custom return Type of Controller
-// MediaType selectedContentType: Content Types: JSON / XML
-// Class<? extends HttpMessageConverter<?>> selectedConverterType: Choose a
-// converter for JSON, which typically is Jackson
-// ServerHttpRequest request: give access to the incoming HTTP request
-// ServerHttpResponse response: Give access to HTTP response, add custom Header
-// and change status code
