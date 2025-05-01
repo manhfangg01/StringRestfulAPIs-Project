@@ -23,7 +23,7 @@ public class JwtConfig {
     @Value("${hoidanit.jwt.base64-secret}")
     private String jwtKey;
 
-    @Value("${hoidanit.jwt.token-validity-in-seconds}")
+    @Value("${hoidanit.jwt.access_token-validity-in-seconds}")
     private long jwtKeyExpiration;
 
     private SecretKey getSecretKey() {

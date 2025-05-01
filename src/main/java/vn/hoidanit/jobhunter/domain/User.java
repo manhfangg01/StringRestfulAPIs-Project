@@ -2,6 +2,7 @@ package vn.hoidanit.jobhunter.domain;
 
 import java.time.Instant;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -32,9 +33,11 @@ public class User {
                                  // lưu tên của Enum
     private GenderEnum gender;
     private String address;
+    @Column(columnDefinition = "MEDIUMTEXT")
     private String refreshToken;
     private Instant createdAt;
     private Instant updatedAt;
     private String createdBy;
     private String updatedBy;
+
 }
