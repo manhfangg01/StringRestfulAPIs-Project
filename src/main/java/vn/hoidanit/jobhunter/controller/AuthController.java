@@ -70,7 +70,7 @@ public class AuthController {
         String refreshToken = this.securityUtil.createRefreshToken(loginDTO.getUsername(), res);
 
         // update user
-        this.userService.updateUserToken(accessToken, loginDTO.getUsername());
+        this.userService.updateUserToken(refreshToken, loginDTO.getUsername());
 
         // Set Cookie
         ResponseCookie responseCookie = ResponseCookie.from("refresh_token", refreshToken)
@@ -102,56 +102,85 @@ public class AuthController {
     }
 
     @GetMapping("/auth/refresh")
-    @ApiMessage("Get User by refresh token")
-    public ResponseEntity<RestLoginDTO> getRefreshToken(
-            @CookieValue(name = "refresh_token", defaultValue = "abc") String refresh_token)
-            throws UserNotExisted, IdInvalidException {
+    @ApiMessage("get user by refresh Token")
+    public ResponseEntity<RestLoginDTO> getRefreshToeken(@CookieValue(name = "refresh_token") String refreshToken)
+            throws IdInvalidException, UserNotExisted {
 
-        if (refresh_token.equals("abc")) {
-            throw new IdInvalidException("Bạn không có refresh token ở cookie");
+        // Check existed refreshToken
+        if (refreshToken == null || refreshToken.isEmpty()) {
+            throw new IdInvalidException("Không tồn tại refreshToken");
         }
-        Jwt decodedToken = this.securityUtil.checkValidRefreshToken(refresh_token);
-        String email = decodedToken.getSubject();
+        // check Valid refreshToken
+        Jwt jwt = securityUtil.checkValidRefreshToken(refreshToken);
 
-        User user = userService.fetchUserByRefreshTokenAndEmail(refresh_token, email);
+        // Get data from token after decoding
+        String email = jwt.getSubject();
+        User user = userService.handleGetUserByUserName(email);
         if (user == null) {
-            throw new UserNotExisted("Refresh Token không hợp lệ");
+            throw new UserNotExisted("Người dùng không tồn tại");
         }
 
-        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
-                user.getName(), user.getPassword());
-        Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
+        // Compare current refresh token with the one in DB
+        if (!refreshToken.equals(user.getRefreshToken())) {
+            throw new IdInvalidException("Invalid refresh token");
+        }
 
-        SecurityContextHolder.getContext().setAuthentication(authentication);
+        // 5. Tạo RestLoginDTO từ thông tin user
         RestLoginDTO res = new RestLoginDTO();
-        User currentUserDB = this.userService.handleGetUserByUserName(email);
-
-        if (currentUserDB != null) {
-            RestLoginDTO.publicUserLogin userLogin = new RestLoginDTO.publicUserLogin(currentUserDB.getId(),
-                    currentUserDB.getEmail(), currentUserDB.getName());
+        if (user != null) {
+            RestLoginDTO.publicUserLogin userLogin = new RestLoginDTO.publicUserLogin(user.getId(),
+                    user.getEmail(), user.getName());
             res.setUser(userLogin);
         }
 
-        String accessToken = this.securityUtil.createAccessToken(email, res);
-        res.setAccessToken(accessToken);
+        // create brand new Tokens
+        String newAccessToken = securityUtil.createAccessToken(email, res);
+        String newRefreshToken = securityUtil.createRefreshToken(email, res);
 
-        String new_refresh_token = this.securityUtil.createRefreshToken(email, res);
+        // update new RefreshToken to DB
+        this.userService.updateUserToken(newRefreshToken, email);
 
-        // update user
-        this.userService.updateUserToken(new_refresh_token, email);
+        // update responseDTO with new AccessToken
+        res.setAccessToken(newAccessToken);
 
-        // Set Cookie
-        ResponseCookie responseCookie = ResponseCookie.from("refresh_token",
-                new_refresh_token)
+        // Set Token vào Cookie
+        ResponseCookie cookie = ResponseCookie.from("refresh_token", newRefreshToken)
                 .httpOnly(true)
                 .secure(true)
                 .path("/")
                 .maxAge(refreshTokenExpiration)
-                // .domain("example.com")
+                .sameSite("Strict")
                 .build();
-        return ResponseEntity.status(HttpStatus.OK)
-                .header(HttpHeaders.SET_COOKIE, responseCookie.toString())
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, cookie.toString())
                 .body(res);
+    }
+
+    @PostMapping("/auth/logout")
+    @ApiMessage("Log out user")
+    public ResponseEntity<Void> logoutUser() throws IdInvalidException {
+        // Lấy ra email người dùng
+        String email = SecurityUtil.getCurrentUserLogin().isPresent() ? SecurityUtil.getCurrentUserLogin().get() : "";
+        if (email.equals("")) {
+            throw new IdInvalidException("Access Token không hợp lệ");
+        }
+
+        // update refreshToke in DB
+        this.userService.updateUserToken(null, email);
+
+        // remove refresh token cookie
+        ResponseCookie deleteSpringCookie = ResponseCookie
+                .from("refresh_token", null)
+                .httpOnly(true)
+                .secure(true)
+                .path("/")
+                .maxAge(0)
+                .build();
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, deleteSpringCookie.toString())
+                .body(null);
     }
 
 }
