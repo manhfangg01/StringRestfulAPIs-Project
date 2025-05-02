@@ -60,7 +60,7 @@ public class AuthController {
         User currentUserDB = this.userService.handleGetUserByUserName(loginDTO.getUsername());
 
         if (currentUserDB != null) {
-            RestLoginDTO.publicUserLogin userLogin = new RestLoginDTO.publicUserLogin(currentUserDB.getId(),
+            RestLoginDTO.UserLogin userLogin = new RestLoginDTO.UserLogin(currentUserDB.getId(),
                     currentUserDB.getEmail(), currentUserDB.getName());
             res.setUser(userLogin);
         }
@@ -87,18 +87,19 @@ public class AuthController {
 
     @GetMapping("/auth/account")
     @ApiMessage("fetch account")
-    public ResponseEntity<RestLoginDTO.publicUserLogin> getAccount() {
-        String email = SecurityUtil.getCurrentUserLogin().isPresent() ? SecurityUtil.getCurrentUserJWT().get() : "";
-
+    public ResponseEntity<RestLoginDTO.UserGetAccount> getAccount() {
+        String email = SecurityUtil.getCurrentUserLogin().isPresent() ? SecurityUtil.getCurrentUserLogin().get() : "";
         User currentUserDB = this.userService.handleGetUserByUserName(email);
-        RestLoginDTO.publicUserLogin userLogin = new RestLoginDTO.publicUserLogin();
-
+        RestLoginDTO.UserLogin userLogin = new RestLoginDTO.UserLogin();
+        RestLoginDTO.UserGetAccount userGetAccount = new RestLoginDTO.UserGetAccount();
         if (currentUserDB != null) {
             userLogin.setId(currentUserDB.getId());
-            userLogin.setName(currentUserDB.getName());
             userLogin.setEmail(currentUserDB.getEmail());
+            userLogin.setName(currentUserDB.getName());
+            userGetAccount.setUser(userLogin);
+
         }
-        return ResponseEntity.ok(userLogin);
+        return ResponseEntity.ok(userGetAccount);
     }
 
     @GetMapping("/auth/refresh")
@@ -128,7 +129,7 @@ public class AuthController {
         // 5. Tạo RestLoginDTO từ thông tin user
         RestLoginDTO res = new RestLoginDTO();
         if (user != null) {
-            RestLoginDTO.publicUserLogin userLogin = new RestLoginDTO.publicUserLogin(user.getId(),
+            RestLoginDTO.UserLogin userLogin = new RestLoginDTO.UserLogin(user.getId(),
                     user.getEmail(), user.getName());
             res.setUser(userLogin);
         }

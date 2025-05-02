@@ -17,9 +17,11 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfiguration {
 
     private final CustomAuthExceptionHandler customAuthExceptionHandler;
+    private final CorsConfig config;
 
-    public SecurityConfiguration(CustomAuthExceptionHandler customAuthExceptionHandler) {
+    public SecurityConfiguration(CustomAuthExceptionHandler customAuthExceptionHandler, CorsConfig config) {
         this.customAuthExceptionHandler = customAuthExceptionHandler;
+        this.config = config;
 
     }
 
@@ -32,7 +34,7 @@ public class SecurityConfiguration {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(c -> c.disable()) // Ở mô hình stateless không dùng token "csrf"
-                // .cors(Customizer.withDefaults())
+                .cors(c -> c.configurationSource(config.corsConfigurationSource())) // Sử dụng cấu hình
                 .authorizeHttpRequests(
                         authz ->
                         // prettier-ignore

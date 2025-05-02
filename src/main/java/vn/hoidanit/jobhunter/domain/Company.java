@@ -43,7 +43,8 @@ public class Company {
     private String description;
     private String address;
     private String logo;
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss a", timezone = "GMT+7") // Format cho frontend thôi
+    // @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss a", timezone = "GMT+7") // Format
+    // cho frontend thôi
 
     private Instant createdAt; // Khi deploy lên thì ở BACKEND múi giờ GMT sẽ được tự động chỉnh lại theo khu
                                // vực (Mặc
