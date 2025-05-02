@@ -1,4 +1,4 @@
-package vn.hoidanit.jobhunter.domain.dto;
+package vn.hoidanit.jobhunter.domain.response;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -16,4 +16,15 @@ public class ResultPaginationDTO {
 
     public ResultPaginationDTO() {
     }
+
+    @Getter
+    @Setter
+    public static class Meta {
+        private int page;
+        private int pageSize;
+        private int pages;
+        private long total;
+
+    }
+
 }

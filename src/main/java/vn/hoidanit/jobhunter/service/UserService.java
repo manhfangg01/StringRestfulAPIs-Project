@@ -10,9 +10,8 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import vn.hoidanit.jobhunter.domain.User;
-import vn.hoidanit.jobhunter.domain.dto.Meta;
-import vn.hoidanit.jobhunter.domain.dto.ResultPaginationDTO;
-import vn.hoidanit.jobhunter.domain.dto.UserDTO;
+import vn.hoidanit.jobhunter.domain.response.ResUserDTO;
+import vn.hoidanit.jobhunter.domain.response.ResultPaginationDTO;
 import vn.hoidanit.jobhunter.repository.UserRepository;
 
 @Service
@@ -59,7 +58,7 @@ public class UserService {
         Pageable pageable = PageRequest.of(pageNumber - 1, pageSize);
         Page<User> pageUser = this.fetchAllUserWithPagination(pageable);
 
-        Meta meta = new Meta();
+        ResultPaginationDTO.Meta meta = new ResultPaginationDTO.Meta();
         meta.setPage(pageUser.getNumber() + 1);
         meta.setPageSize(pageUser.getSize());
         meta.setPages(pageUser.getTotalPages());
@@ -76,13 +75,13 @@ public class UserService {
         Page<User> userPage = this.userRepository.findAll(spec, pageable);
 
         // Chuyển đổi sang DTO
-        List<UserDTO> userDTOs = userPage.getContent()
+        List<ResUserDTO> userDTOs = userPage.getContent()
                 .stream()
                 .map(this::convertToUserDTO)
                 .toList();
 
         // Tạo metadata phân trang
-        Meta meta = new Meta();
+        ResultPaginationDTO.Meta meta = new ResultPaginationDTO.Meta();
         meta.setPage(userPage.getNumber() + 1); // PageNumber bắt đầu từ 0
         meta.setPageSize(userPage.getSize());
         meta.setPages(userPage.getTotalPages());
@@ -92,8 +91,8 @@ public class UserService {
     }
 
     // Phương thức chuyển đổi User -> UserDTO
-    private UserDTO convertToUserDTO(User user) {
-        UserDTO dto = new UserDTO();
+    private ResUserDTO convertToUserDTO(User user) {
+        ResUserDTO dto = new ResUserDTO();
         dto.setId(user.getId());
         dto.setName(user.getName());
         dto.setEmail(user.getEmail());

@@ -17,8 +17,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
 import vn.hoidanit.jobhunter.domain.User;
-import vn.hoidanit.jobhunter.domain.dto.LoginDTO;
-import vn.hoidanit.jobhunter.domain.dto.RestLoginDTO;
+import vn.hoidanit.jobhunter.domain.request.ReqLoginDTO;
+import vn.hoidanit.jobhunter.domain.response.ResLoginDTO;
 import vn.hoidanit.jobhunter.service.UserService;
 import vn.hoidanit.jobhunter.util.SecurityUtil;
 import vn.hoidanit.jobhunter.util.annotation.ApiMessage;
@@ -47,18 +47,18 @@ public class AuthController {
     }
 
     @PostMapping("/auth/login")
-    public ResponseEntity<RestLoginDTO> login(@Valid @RequestBody LoginDTO loginDTO) {
+    public ResponseEntity<ResLoginDTO> login(@Valid @RequestBody ReqLoginDTO loginDTO) {
         // Nạp input gồm username/password vào Security
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
                 loginDTO.getUsername(), loginDTO.getPassword());
         Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
-        RestLoginDTO res = new RestLoginDTO();
+        ResLoginDTO res = new ResLoginDTO();
         User currentUserDB = this.userService.handleGetUserByUserName(loginDTO.getUsername());
 
         if (currentUserDB != null) {
-            RestLoginDTO.UserLogin userLogin = new RestLoginDTO.UserLogin(currentUserDB.getId(),
+            ResLoginDTO.UserLogin userLogin = new ResLoginDTO.UserLogin(currentUserDB.getId(),
                     currentUserDB.getEmail(), currentUserDB.getName());
             res.setUser(userLogin);
         }
@@ -85,11 +85,11 @@ public class AuthController {
 
     @GetMapping("/auth/account")
     @ApiMessage("fetch account")
-    public ResponseEntity<RestLoginDTO.UserGetAccount> getAccount() {
+    public ResponseEntity<ResLoginDTO.UserGetAccount> getAccount() {
         String email = SecurityUtil.getCurrentUserLogin().isPresent() ? SecurityUtil.getCurrentUserLogin().get() : "";
         User currentUserDB = this.userService.handleGetUserByUserName(email);
-        RestLoginDTO.UserLogin userLogin = new RestLoginDTO.UserLogin();
-        RestLoginDTO.UserGetAccount userGetAccount = new RestLoginDTO.UserGetAccount();
+        ResLoginDTO.UserLogin userLogin = new ResLoginDTO.UserLogin();
+        ResLoginDTO.UserGetAccount userGetAccount = new ResLoginDTO.UserGetAccount();
         if (currentUserDB != null) {
             userLogin.setId(currentUserDB.getId());
             userLogin.setEmail(currentUserDB.getEmail());
@@ -102,7 +102,7 @@ public class AuthController {
 
     @GetMapping("/auth/refresh")
     @ApiMessage("get user by refresh Token")
-    public ResponseEntity<RestLoginDTO> getRefreshToeken(@CookieValue(name = "refresh_token") String refreshToken)
+    public ResponseEntity<ResLoginDTO> getRefreshToeken(@CookieValue(name = "refresh_token") String refreshToken)
             throws IdInvalidException, UserNotExisted {
 
         // Check existed refreshToken
@@ -125,9 +125,9 @@ public class AuthController {
         }
 
         // 5. Tạo RestLoginDTO từ thông tin user
-        RestLoginDTO res = new RestLoginDTO();
+        ResLoginDTO res = new ResLoginDTO();
         if (user != null) {
-            RestLoginDTO.UserLogin userLogin = new RestLoginDTO.UserLogin(user.getId(),
+            ResLoginDTO.UserLogin userLogin = new ResLoginDTO.UserLogin(user.getId(),
                     user.getEmail(), user.getName());
             res.setUser(userLogin);
         }

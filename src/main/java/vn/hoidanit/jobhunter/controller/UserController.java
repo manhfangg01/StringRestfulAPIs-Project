@@ -19,9 +19,9 @@ import com.turkraft.springfilter.boot.Filter;
 
 import jakarta.validation.Valid;
 import vn.hoidanit.jobhunter.domain.User;
-import vn.hoidanit.jobhunter.domain.dto.ResultPaginationDTO;
-import vn.hoidanit.jobhunter.domain.dto.UpdateUserDTO;
-import vn.hoidanit.jobhunter.domain.dto.UserDTO;
+import vn.hoidanit.jobhunter.domain.response.ResUpdateUserDTO;
+import vn.hoidanit.jobhunter.domain.response.ResUserDTO;
+import vn.hoidanit.jobhunter.domain.response.ResultPaginationDTO;
 import vn.hoidanit.jobhunter.service.UserService;
 import vn.hoidanit.jobhunter.util.annotation.ApiMessage;
 import vn.hoidanit.jobhunter.util.error.EmailExisted;
@@ -81,14 +81,14 @@ public class UserController {
 
     @GetMapping("users/{id}")
     @ApiMessage("Fetch One Users")
-    public ResponseEntity<UserDTO> getOneUser(
+    public ResponseEntity<ResUserDTO> getOneUser(
             @PathVariable("id") long id) throws UserNotExisted {
         Optional<User> optionalUser = this.userService.findUserById(id);
         if (optionalUser.isEmpty()) {
             throw new UserNotExisted("User không tồn tại trong hệ thống");
         } else {
             User realUser = optionalUser.get();
-            UserDTO userDTO = new UserDTO();
+            ResUserDTO userDTO = new ResUserDTO();
             userDTO.setId(id);
             userDTO.setEmail(realUser.getEmail());
             userDTO.setName(realUser.getName());
@@ -103,7 +103,7 @@ public class UserController {
 
     @PostMapping("/users")
     @ApiMessage("Create a new user")
-    public ResponseEntity<UserDTO> createNewUser(
+    public ResponseEntity<ResUserDTO> createNewUser(
             @Valid @RequestBody User postManUser) throws EmailExisted {
 
         // Kiểm tra email đã tồn tại chưa
@@ -129,7 +129,7 @@ public class UserController {
         // Lưu user
         User savedUser = userService.handleSaveUser(newUser);
 
-        UserDTO userDTO = new UserDTO();
+        ResUserDTO userDTO = new ResUserDTO();
         userDTO.setEmail(savedUser.getEmail());
         userDTO.setAddress(savedUser.getAddress());
         userDTO.setAge(savedUser.getAge());
@@ -142,7 +142,8 @@ public class UserController {
 
     @PutMapping("/users")
     @ApiMessage("Update user successful")
-    public ResponseEntity<UpdateUserDTO> updateUser(@RequestBody UpdateUserDTO updatedUser) throws UserNotExisted {
+    public ResponseEntity<ResUpdateUserDTO> updateUser(@RequestBody ResUpdateUserDTO updatedUser)
+            throws UserNotExisted {
         Optional<User> optionalUser = this.userService.findUserById(updatedUser.getId());
         if (optionalUser.isPresent()) {
             User realUser = optionalUser.get();

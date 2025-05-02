@@ -1,4 +1,4 @@
-package vn.hoidanit.jobhunter.domain.dto;
+package vn.hoidanit.jobhunter.domain.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -6,11 +6,11 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import vn.hoidanit.jobhunter.domain.dto.RestLoginDTO.UserLogin;
+import vn.hoidanit.jobhunter.domain.response.ResLoginDTO.UserLogin;
 
 @Getter
 @Setter
-public class RestLoginDTO {
+public class ResLoginDTO {
     @JsonProperty("access_token")
     private String accessToken;
     private UserLogin user;

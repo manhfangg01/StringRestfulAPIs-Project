@@ -25,7 +25,7 @@ import org.springframework.stereotype.Service;
 
 import com.nimbusds.jose.util.Base64;
 
-import vn.hoidanit.jobhunter.domain.dto.RestLoginDTO;
+import vn.hoidanit.jobhunter.domain.response.ResLoginDTO;
 
 @Service
 public class SecurityUtil {
@@ -62,7 +62,7 @@ public class SecurityUtil {
         }
     }
 
-    public String createAccessToken(String email, RestLoginDTO restLoginDTO) {
+    public String createAccessToken(String email, ResLoginDTO restLoginDTO) {
         Instant now = Instant.now();
         Instant validity = now.plus(this.accessTokenExpiration, ChronoUnit.SECONDS);
 
@@ -87,7 +87,7 @@ public class SecurityUtil {
     }
 
 
-     public String createRefreshToken(String email, RestLoginDTO restLoginDTO) {
+     public String createRefreshToken(String email, ResLoginDTO restLoginDTO) {
         Instant now = Instant.now();
         Instant validity = now.plus(this.accessTokenExpiration, ChronoUnit.SECONDS);
 
