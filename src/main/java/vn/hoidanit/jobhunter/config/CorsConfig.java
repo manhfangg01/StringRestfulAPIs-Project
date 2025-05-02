@@ -18,7 +18,23 @@ public class CorsConfig {
                 Arrays.asList("http://localhost:3000", "http://localhost:4173", "http://localhost:3000",
                         "http://localhost:5173"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS")); // Allowed methods
-        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Accept", "x-no-retry"));
+        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Accept", "x-no-retry")); // Nếu
+                                                                                                                 // như
+                                                                                                                 // không
+                                                                                                                 // có
+                                                                                                                 // "x-no-retry"
+                                                                                                                 // ->
+                                                                                                                 // khi
+                                                                                                                 // mấy
+                                                                                                                 // AccessToken
+                                                                                                                 // thì
+                                                                                                                 // sẽ
+                                                                                                                 // bị
+                                                                                                                 // lỗi
+                                                                                                                 // CORS
+        // Khi client gửi request có chứa header tùy chỉnh (ví dụ: x-no-retry: true),
+        // browser sẽ chặn request nếu header này không được liệt kê trong
+        // AllowedHeaders của CORS.
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L);
         // How long the response from a pre-flight request can be cached by clients
