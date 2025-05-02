@@ -10,5 +10,7 @@ import vn.hoidanit.jobhunter.domain.User;
  */
 public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificationExecutor<User> {
     public User findByEmail(String email);
-    
+
+    public User findByRefreshTokenAndEmail(String refreshToken, String email);
+
 }

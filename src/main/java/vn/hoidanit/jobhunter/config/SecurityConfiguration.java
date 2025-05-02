@@ -8,6 +8,8 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
@@ -35,7 +37,8 @@ public class SecurityConfiguration {
                         authz ->
                         // prettier-ignore
                         authz
-                                .requestMatchers("/", "/api/users", "api/v1/login", "api/v1/register", "api/v1/users")
+                                .requestMatchers("/", "/api/users", "api/v1/auth/login", "api/v1/register",
+                                        "api/v1/users", "api/v1/auth/refresh")
                                 .permitAll()
                                 .anyRequest()
                                 .authenticated())
@@ -50,6 +53,22 @@ public class SecurityConfiguration {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
         return http.build();
+    }
+
+    @Bean
+    public JwtAuthenticationConverter jwtAuthenticationConverter() {
+        // Step 1: Create a converter to extract authorities from JWT claims
+        JwtGrantedAuthoritiesConverter grantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
+
+        // Step 2: Configure the converter
+        grantedAuthoritiesConverter.setAuthorityPrefix(""); // Remove default "SCOPE_" prefix
+        grantedAuthoritiesConverter.setAuthoritiesClaimName("permissions"); // Look for "permissions" claim in JWT
+
+        // Step 3: Create the main JWT authentication converter
+        JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
+        jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(grantedAuthoritiesConverter);
+
+        return jwtAuthenticationConverter;
     }
 
 }
