@@ -16,7 +16,7 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.NoHandlerFoundException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
-import vn.hoidanit.jobhunter.domain.RestResponse;
+import vn.hoidanit.jobhunter.domain.response.RestResponse;
 
 @RestControllerAdvice
 public class GlobalException {
