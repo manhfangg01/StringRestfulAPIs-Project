@@ -7,62 +7,57 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EntityListeners;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
-import vn.hoidanit.jobhunter.service.listener.AuditTrailListener;
 import vn.hoidanit.jobhunter.util.SecurityUtil;
+import vn.hoidanit.jobhunter.util.constant.Level;
 
-@Table(name = "companies")
+@Entity
+@Table(name = "jobs")
 @Getter
 @Setter
-@Entity
-@EntityListeners(AuditTrailListener.class)
-public class Company {
-
-    // private final SecurityUtil securityUtil;
-
-    // public Company(SecurityUtil securityUtil) {
-    // this.securityUtil = securityUtil;
-    // Không bao giờ được Inject 1 class vào trong 1 class có @Entity
-    // Thay vào đó hãy dùng static
-    // }
-
+public class Job {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
-    @NotBlank(message = "Không được bỏ trống trường name")
     private String name;
+    private String location;
+    private double salary;
+    @Enumerated(EnumType.STRING)
+    private Level level;
     @Column(columnDefinition = "MEDIUMTEXT")
     private String description;
-    private String address;
-    private String logo;
-    // @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss a", timezone = "GMT+7") // Format
-    // cho frontend thôi
-
-    private Instant createdAt; // Khi deploy lên thì ở BACKEND múi giờ GMT sẽ được tự động chỉnh lại theo khu
-                               // vực (Mặc
-                               // định là 0)
+    private Instant startDate;
+    private Instant endDate;
+    private boolean isActive;
+    private Instant createdAt;
     private Instant updatedAt;
     private String createdBy;
     private String updatedBy;
 
-    @OneToMany(mappedBy = "company", fetch = FetchType.LAZY)
-    @JsonIgnore // Nếu muốn response phớt lờ trường này, cách 2 là dùng DTO
-    List<User> users;
+    // relationships
 
-    @OneToMany(mappedBy = "company", fetch = FetchType.LAZY)
+    @ManyToOne
+    @JoinColumn(name = "company_id")
+    private Company company;
+
+    @ManyToMany(fetch = FetchType.LAZY)
     @JsonIgnore
-    List<Job> jobs;
+    @JoinTable(name = "job_skill", joinColumns = @JoinColumn(name = "job_id"), inverseJoinColumns = @JoinColumn(name = "skill_id"))
+    private List<Skill> skills;
 
     @PrePersist
     public void handleBeforeCreationOfACompany() {
@@ -79,4 +74,5 @@ public class Company {
                 : "?";
         this.updatedAt = Instant.now();
     }
+
 }
