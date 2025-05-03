@@ -29,6 +29,15 @@ public class GlobalException {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
     }
 
+    @ExceptionHandler(value = ObjectCollapsed.class)
+    public ResponseEntity<RestResponse<Object>> handleIdException(ObjectCollapsed idException) {
+        RestResponse<Object> res = new RestResponse<Object>();
+        res.setStatusCode(HttpStatus.BAD_REQUEST.value());
+        res.setError(idException.getMessage());
+        res.setMessage("IdInvalidException");
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
+    }
+
     @ExceptionHandler(value = EmailExisted.class)
     public ResponseEntity<RestResponse<Object>> handleIdException(EmailExisted e) {
         RestResponse<Object> res = new RestResponse<Object>();
