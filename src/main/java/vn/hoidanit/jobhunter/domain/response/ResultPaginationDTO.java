@@ -8,6 +8,7 @@ import lombok.Setter;
 public class ResultPaginationDTO {
     private Meta meta;
     private Object result;
+    // private CompanyDTO company;
 
     public ResultPaginationDTO(Meta meta, Object result) {
         this.meta = meta;
@@ -26,5 +27,12 @@ public class ResultPaginationDTO {
         private long total;
 
     }
+
+    // @Getter
+    // @Setter
+    // public static class CompanyDTO {
+    // private long id;
+    // private String name;
+    // }
 
 }

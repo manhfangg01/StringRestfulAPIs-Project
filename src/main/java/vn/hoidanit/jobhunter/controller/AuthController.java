@@ -23,7 +23,7 @@ import vn.hoidanit.jobhunter.service.UserService;
 import vn.hoidanit.jobhunter.util.SecurityUtil;
 import vn.hoidanit.jobhunter.util.annotation.ApiMessage;
 import vn.hoidanit.jobhunter.util.error.IdInvalidException;
-import vn.hoidanit.jobhunter.util.error.UserNotExisted;
+import vn.hoidanit.jobhunter.util.error.ObjectNotExisted;
 
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -103,7 +103,7 @@ public class AuthController {
     @GetMapping("/auth/refresh")
     @ApiMessage("get user by refresh Token")
     public ResponseEntity<ResLoginDTO> getRefreshToeken(@CookieValue(name = "refresh_token") String refreshToken)
-            throws IdInvalidException, UserNotExisted {
+            throws IdInvalidException, ObjectNotExisted {
 
         // Check existed refreshToken
         if (refreshToken == null || refreshToken.isEmpty()) {
@@ -116,7 +116,7 @@ public class AuthController {
         String email = jwt.getSubject();
         User user = userService.handleGetUserByUserName(email);
         if (user == null) {
-            throw new UserNotExisted("Người dùng không tồn tại");
+            throw new ObjectNotExisted("Người dùng không tồn tại");
         }
 
         // Compare current refresh token with the one in DB

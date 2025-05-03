@@ -22,11 +22,12 @@ import vn.hoidanit.jobhunter.domain.User;
 import vn.hoidanit.jobhunter.domain.response.ResUpdateUserDTO;
 import vn.hoidanit.jobhunter.domain.response.ResUserDTO;
 import vn.hoidanit.jobhunter.domain.response.ResultPaginationDTO;
+import vn.hoidanit.jobhunter.service.CompanyService;
 import vn.hoidanit.jobhunter.service.UserService;
 import vn.hoidanit.jobhunter.util.annotation.ApiMessage;
 import vn.hoidanit.jobhunter.util.error.EmailExisted;
 import vn.hoidanit.jobhunter.util.error.IdInvalidException;
-import vn.hoidanit.jobhunter.util.error.UserNotExisted;
+import vn.hoidanit.jobhunter.util.error.ObjectNotExisted;
 
 import org.springframework.web.bind.annotation.PutMapping;
 
@@ -35,57 +36,31 @@ import org.springframework.web.bind.annotation.PutMapping;
 public class UserController {
     private final UserService userService;
     private final PasswordEncoder passwordEncoder;
+    private final CompanyService companyService;
     // private final ApiService apiService;
 
-    public UserController(UserService userService, PasswordEncoder passwordEncoder) {
+    public UserController(UserService userService, PasswordEncoder passwordEncoder, CompanyService companyService) {
         this.userService = userService;
         this.passwordEncoder = passwordEncoder;
         // this.apiService = apiService;
+        this.companyService = companyService;
     }
-
-    // @GetMapping("/api/users")
-    // public ResponseEntity<List<User>> getApiData() {
-    // List<User> users = apiService.getUsers();
-    // return ResponseEntity.ok(users);
-    // }
-
-    // @GetMapping("/users")
-    // public ResponseEntity<ResultPaginationDTO> getAllUser(
-    // @RequestParam("current") Optional<String> currentOptional,
-    // @RequestParam("pageSize") Optional<String> pageSizeOptional) {
-
-    // String sCurrent = currentOptional.orElse("");
-    // String sPageSize = pageSizeOptional.orElse("");
-
-    // ResultPaginationDTO result;
-    // if (sCurrent.isEmpty() || sPageSize.isEmpty()) {
-    // result = userService.fetchAllUserWithoutPagination();
-    // } else {
-    // int pageNumber = Integer.parseInt(sCurrent);
-    // int pageSize = Integer.parseInt(sPageSize);
-    // result = userService.fetchAllUserWithPagination(pageNumber, pageSize);
-    // }
-
-    // return ResponseEntity.ok(result);
-    // }
 
     @GetMapping("users")
     @ApiMessage("Fetch All Users")
     public ResponseEntity<ResultPaginationDTO> getAllUsersWithPaginationAndSpecification(
             @Filter Specification<User> spec,
             Pageable pageable) {
-        // Pageable tự handle page, size, sort, và filter, trong trường hợp không truyền
-        // lên URL cững sẽ handle được
         return ResponseEntity.ok(this.userService.fetchAllUserWithPaginationAndSpecification(spec, pageable));
     }
 
     @GetMapping("users/{id}")
     @ApiMessage("Fetch One Users")
     public ResponseEntity<ResUserDTO> getOneUser(
-            @PathVariable("id") long id) throws UserNotExisted {
+            @PathVariable("id") long id) throws ObjectNotExisted {
         Optional<User> optionalUser = this.userService.findUserById(id);
         if (optionalUser.isEmpty()) {
-            throw new UserNotExisted("User không tồn tại trong hệ thống");
+            throw new ObjectNotExisted("User không tồn tại trong hệ thống");
         } else {
             User realUser = optionalUser.get();
             ResUserDTO userDTO = new ResUserDTO();
@@ -97,6 +72,10 @@ public class UserController {
             userDTO.setAge(realUser.getAge());
             userDTO.setUpdatedAt(realUser.getUpdatedAt());
             userDTO.setCreatedAt(realUser.getCreatedAt());
+            ResUserDTO.CompanyDTO companyDTO = new ResUserDTO.CompanyDTO();
+            companyDTO.setId(realUser.getCompany() != null ? realUser.getCompany().getId() : -1);
+            companyDTO.setName(realUser.getCompany() != null ? realUser.getCompany().getName() : "");
+            userDTO.setCompany(companyDTO);
             return ResponseEntity.ok(userDTO);
         }
     }
@@ -119,6 +98,10 @@ public class UserController {
         newUser.setAge(postManUser.getAge());
         newUser.setGender(postManUser.getGender());
         newUser.setAddress(postManUser.getAddress());
+        newUser.setCompany(companyService.handleFetchCompanyById(postManUser.getCompany().getId()).isPresent()
+                ? companyService.handleFetchCompanyById(postManUser.getCompany()
+                        .getId()).get()
+                : null);
 
         // Set các trường metadata
         newUser.setCreatedAt(Instant.now());
@@ -127,15 +110,20 @@ public class UserController {
         newUser.setUpdatedBy("SYSTEM");
 
         // Lưu user
-        User savedUser = userService.handleSaveUser(newUser);
+        this.userService.handleSaveUser(newUser);
 
         ResUserDTO userDTO = new ResUserDTO();
-        userDTO.setEmail(savedUser.getEmail());
-        userDTO.setAddress(savedUser.getAddress());
-        userDTO.setAge(savedUser.getAge());
-        userDTO.setGender(savedUser.getGender());
-        userDTO.setName(savedUser.getName());
-        userDTO.setId(savedUser.getId());
+        ResUserDTO.CompanyDTO companyDTO = new ResUserDTO.CompanyDTO();
+        companyDTO.setId(newUser.getCompany() != null ? newUser.getCompany().getId() : -1);
+        companyDTO.setName(newUser.getCompany() != null ? newUser.getCompany().getName() : "");
+        userDTO.setEmail(newUser.getEmail());
+        userDTO.setAddress(newUser.getAddress());
+        userDTO.setAge(newUser.getAge());
+        userDTO.setGender(newUser.getGender());
+        userDTO.setName(newUser.getName());
+        userDTO.setId(newUser.getId());
+        userDTO.setUpdatedAt(Instant.now());
+        userDTO.setCompany(companyDTO);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(userDTO);
     }
@@ -143,19 +131,29 @@ public class UserController {
     @PutMapping("/users")
     @ApiMessage("Update user successful")
     public ResponseEntity<ResUpdateUserDTO> updateUser(@RequestBody ResUpdateUserDTO updatedUser)
-            throws UserNotExisted {
+            throws ObjectNotExisted {
         Optional<User> optionalUser = this.userService.findUserById(updatedUser.getId());
         if (optionalUser.isPresent()) {
             User realUser = optionalUser.get();
+
             realUser.setAddress(updatedUser.getAddress());
             realUser.setAge(updatedUser.getAge());
             realUser.setGender(updatedUser.getGender());
             realUser.setName(updatedUser.getName());
             realUser.setUpdatedAt(Instant.now());
+            realUser.setCompany(companyService.handleFetchCompanyById(updatedUser.getCompany().getId()).isPresent()
+                    ? companyService.handleFetchCompanyById(updatedUser.getCompany().getId()).get()
+                    : null);
+
+            ResUpdateUserDTO.CompanyDTO companyDTO = new ResUpdateUserDTO.CompanyDTO();
+            companyDTO.setId(realUser.getCompany() != null ? realUser.getCompany().getId() : -1);
+            companyDTO.setName(realUser.getCompany() != null ? realUser.getCompany().getName() : "");
+            updatedUser.setCompany(companyDTO);
+
             this.userService.handleSaveUser(realUser);
             return ResponseEntity.ok(updatedUser);
         } else {
-            throw new UserNotExisted(
+            throw new ObjectNotExisted(
                     "User với " + updatedUser.getId() + " không tồn tại trong hệ thống");
         }
 
@@ -166,7 +164,7 @@ public class UserController {
     // Annotation @Put
     @DeleteMapping("/users/{id}")
     @ApiMessage("Delete a user")
-    public ResponseEntity<Void> deleteUser(@PathVariable("id") long id) throws IdInvalidException, UserNotExisted { // Nếu
+    public ResponseEntity<Void> deleteUser(@PathVariable("id") long id) throws IdInvalidException, ObjectNotExisted { // Nếu
         // ResponseEntity<Void>
         // -> Không cần trả
         // về body
@@ -176,7 +174,7 @@ public class UserController {
         Optional<User> optionalUser = this.userService.findUserById(id);
 
         if (optionalUser.isEmpty()) {
-            throw new UserNotExisted("User không tồn tại trong hệ thống");
+            throw new ObjectNotExisted("User không tồn tại trong hệ thống");
         } else {
             this.userService.handleDeleteUser(optionalUser.get());
         }

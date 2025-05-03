@@ -38,12 +38,21 @@ public class GlobalException {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
     }
 
-    @ExceptionHandler(value = UserNotExisted.class)
-    public ResponseEntity<RestResponse<Object>> handleIdException(UserNotExisted e) {
+    @ExceptionHandler(value = BusinessException.class)
+    public ResponseEntity<RestResponse<Object>> handleIdException(BusinessException e) {
         RestResponse<Object> res = new RestResponse<Object>();
         res.setStatusCode(HttpStatus.BAD_REQUEST.value());
         res.setError(e.getMessage());
-        res.setMessage("User is not exist in our system");
+        res.setMessage("Business-related error occurs");
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
+    }
+
+    @ExceptionHandler(value = ObjectNotExisted.class)
+    public ResponseEntity<RestResponse<Object>> handleIdException(ObjectNotExisted e) {
+        RestResponse<Object> res = new RestResponse<Object>();
+        res.setStatusCode(HttpStatus.BAD_REQUEST.value());
+        res.setError(e.getMessage());
+        res.setMessage("Not existed");
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
     }
 

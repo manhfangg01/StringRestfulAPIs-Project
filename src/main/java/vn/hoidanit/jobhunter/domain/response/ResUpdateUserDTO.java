@@ -15,5 +15,13 @@ public class ResUpdateUserDTO {
     private int age;
     private String address;
     private Instant UpdatedAt;
+    private CompanyDTO company;
+
+    @Getter
+    @Setter
+    public static class CompanyDTO {
+        private long id;
+        private String name;
+    }
 
 }

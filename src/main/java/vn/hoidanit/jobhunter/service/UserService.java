@@ -9,6 +9,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import vn.hoidanit.jobhunter.domain.Company;
 import vn.hoidanit.jobhunter.domain.User;
 import vn.hoidanit.jobhunter.domain.response.ResUserDTO;
 import vn.hoidanit.jobhunter.domain.response.ResultPaginationDTO;
@@ -87,12 +88,15 @@ public class UserService {
         meta.setPages(userPage.getTotalPages());
         meta.setTotal(userPage.getTotalElements()); // Không trừ 1
 
+        // Gán trường cho Company
+
         return new ResultPaginationDTO(meta, userDTOs);
     }
 
     // Phương thức chuyển đổi User -> UserDTO
     private ResUserDTO convertToUserDTO(User user) {
         ResUserDTO dto = new ResUserDTO();
+        ResUserDTO.CompanyDTO companyInfo = new ResUserDTO.CompanyDTO();
         dto.setId(user.getId());
         dto.setName(user.getName());
         dto.setEmail(user.getEmail());
@@ -101,6 +105,9 @@ public class UserService {
         dto.setAddress(user.getAddress());
         dto.setCreatedAt(user.getCreatedAt());
         dto.setUpdatedAt(user.getUpdatedAt()); // Lưu ý chính tả (UpdatedAt -> updatedAt)
+        companyInfo.setId(user.getCompany() != null ? user.getCompany().getId() : -1);
+        companyInfo.setName(user.getCompany() != null ? user.getCompany().getName() : "");
+        dto.setCompany(companyInfo);
         return dto;
     }
 
@@ -118,6 +125,11 @@ public class UserService {
 
     public User fetchUserByRefreshTokenAndEmail(String refreshToken, String email) {
         return this.userRepository.findByRefreshTokenAndEmail(refreshToken, email);
+    }
+
+    public long handleCountUserInCompanyById(Company company) {
+        List<User> users = this.userRepository.findByCompany(company);
+        return users.size();
     }
 
 }
