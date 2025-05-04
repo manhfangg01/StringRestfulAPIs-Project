@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 
 import vn.hoidanit.jobhunter.domain.Job;
 import vn.hoidanit.jobhunter.domain.Skill;
-import vn.hoidanit.jobhunter.domain.request.ResCreateJobDTO;
+import vn.hoidanit.jobhunter.domain.response.ResCreateJobDTO;
 import vn.hoidanit.jobhunter.domain.response.ResJobsAndMeta;
 import vn.hoidanit.jobhunter.domain.response.ResUpdateJobDTO;
 import vn.hoidanit.jobhunter.domain.response.ResultPaginationDTO;
@@ -33,7 +33,7 @@ public class JobService {
         return this.jobRepository.save(job);
     }
 
-    public ResCreateJobDTO create(Job j) {
+    public vn.hoidanit.jobhunter.domain.response.ResCreateJobDTO create(Job j) {
         // check skills
         if (j.getSkills() != null) {
             List<Long> reqSkills = j.getSkills()
@@ -48,7 +48,7 @@ public class JobService {
         // create job
         Job currentJob = this.jobRepository.save(j);
         // convert response
-        ResCreateJobDTO dto = new ResCreateJobDTO();
+        vn.hoidanit.jobhunter.domain.response.ResCreateJobDTO dto = new vn.hoidanit.jobhunter.domain.response.ResCreateJobDTO();
         dto.setId(currentJob.getId());
         dto.setName(currentJob.getName());
         dto.setSalary(currentJob.getSalary());

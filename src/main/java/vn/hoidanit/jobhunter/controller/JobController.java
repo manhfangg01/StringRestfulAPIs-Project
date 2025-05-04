@@ -6,7 +6,7 @@ import com.turkraft.springfilter.boot.Filter;
 
 import jakarta.validation.Valid;
 import vn.hoidanit.jobhunter.domain.Job;
-import vn.hoidanit.jobhunter.domain.request.ResCreateJobDTO;
+import vn.hoidanit.jobhunter.domain.response.ResCreateJobDTO;
 import vn.hoidanit.jobhunter.domain.response.ResUpdateJobDTO;
 import vn.hoidanit.jobhunter.domain.response.RestResponse;
 import vn.hoidanit.jobhunter.domain.response.ResultPaginationDTO;
@@ -55,7 +55,7 @@ public class JobController {
 
     @PostMapping("/jobs")
     @ApiMessage("Create a job")
-    public ResponseEntity<ResCreateJobDTO> create(@Valid @RequestBody Job job) {
+    public ResponseEntity<vn.hoidanit.jobhunter.domain.response.ResCreateJobDTO> create(@Valid @RequestBody Job job) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(this.jobService.create(job));
     }
