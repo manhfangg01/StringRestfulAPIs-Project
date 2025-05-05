@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.core.MethodParameter;
+import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
@@ -37,16 +38,8 @@ public class FormatRestResponse implements ResponseBodyAdvice<Object> {
         int status = servletResponse.getStatus();
 
         // Nếu trả về String → phải trả chuỗi JSON chứ không return object
-        if (body instanceof String) {
-            RestResponse<Object> wrapped = new RestResponse<>();
-            wrapped.setStatusCode(status);
-            wrapped.setData(body);
-            wrapped.setMessage(getMessage(returnType, status));
-            try {
-                return mapper.writeValueAsString(wrapped);
-            } catch (JsonProcessingException e) {
-                throw new RuntimeException("Error serializing response", e);
-            }
+        if (body instanceof String || body instanceof Resource) {
+            return body;
         }
 
         // Trả về object JSON như bình thường

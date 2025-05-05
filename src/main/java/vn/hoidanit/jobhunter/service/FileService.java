@@ -1,8 +1,10 @@
 package vn.hoidanit.jobhunter.service;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
@@ -11,6 +13,9 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -46,6 +51,55 @@ public class FileService {
                     StandardCopyOption.REPLACE_EXISTING);
         }
         return finalName;
+    }
+
+    public long getFileLength(String fileName, String folder) throws URISyntaxException {
+        // Tạo đường dẫn đầy đủ đến file
+        URI uri = new URI(baseURI + folder + "/" + fileName);
+        Path path = Paths.get(uri);
+
+        // Kiểm tra file có tồn tại và là file thông thường không
+        if (Files.exists(path) && Files.isRegularFile(path)) {
+            try {
+                // Trả về kích thước file (bytes)
+                return Files.size(path);
+            } catch (IOException e) {
+                e.printStackTrace();
+                return -1; // Lỗi khi đọc file
+            }
+        }
+        return -1; // File không tồn tại
+    }
+
+    public InputStreamResource getResource(String fileName, String folder)
+            throws URISyntaxException, IOException {
+
+        // Validate filename để tránh Path Traversal
+        if (fileName.contains("..")) {
+            throw new SecurityException("Tên file không hợp lệ");
+        }
+
+        // Tạo đường dẫn đầy đủ
+        Path path = Paths.get(baseURI + folder + "/" + fileName);
+
+        // Kiểm tra file tồn tại và có thể đọc
+        if (!Files.exists(path) || !Files.isRegularFile(path)) {
+            throw new FileNotFoundException("Không tìm thấy file: " + fileName);
+        }
+
+        // Mở stream và trả về InputStreamResource
+        InputStream inputStream = Files.newInputStream(path);
+        return new InputStreamResource(inputStream) {
+            @Override
+            public String getFilename() {
+                return fileName;
+            }
+
+            @Override
+            public long contentLength() throws IOException {
+                return Files.size(path);
+            }
+        };
     }
 
 }

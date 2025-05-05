@@ -10,17 +10,24 @@ import vn.hoidanit.jobhunter.util.annotation.ApiMessage;
 import vn.hoidanit.jobhunter.util.error.FileStorageException;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URISyntaxException;
+
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.GetMapping;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -33,10 +40,42 @@ public class FileController {
         this.fileService = fileService;
     }
 
+    // @GetMapping("/files")
+    // @ApiMessage("download single file")
+    // public ResponseEntity<Resource> getMethodName(@RequestParam(name =
+    // "fileName", required = false) String fileName,
+    // @RequestParam(name = "folder", required = false) String folder)
+    // throws FileStorageException, URISyntaxException, IOException {
+    // if (fileName == null || folder == null) {
+    // throw new FileStorageException("Missing required params : (fileName or
+    // folder)");
+    // }
+
+    // // check file existed (and not a directory) with file length
+    // long fileLength = this.fileService.getFileLength(fileName, folder);
+    // if (fileLength == -1) {
+    // throw new FileStorageException("File not found");
+    // }
+
+    // // download file
+    // InputStreamResource resource = this.fileService.getResource(fileName,
+    // folder);
+
+    // return ResponseEntity.ok()
+    // .header(HttpHeaders.CONTENT_DISPOSITION,
+    // "attachment; filename=\"" + fileName + "\"")
+    // .contentLength(fileLength)
+    // .contentType(MediaType.APPLICATION_OCTET_STREAM)
+    // .body(resource);
+
+    // }// todo
+
     @PostMapping("/files")
     @ApiMessage("upload Single file")
-    public ResponseEntity<ResFileUploadDTO> uploadFile(@RequestParam("file") MultipartFile file,
-            @RequestParam("folder") String folder) throws URISyntaxException, IOException, FileStorageException {
+    public ResponseEntity<ResFileUploadDTO> uploadFile(
+            @RequestParam(name = "file", required = false) MultipartFile file,
+            @RequestParam(name = "folder", required = false) String folder)
+            throws URISyntaxException, IOException, FileStorageException {
 
         // handle empty file
         if (file.isEmpty() || file == null) {

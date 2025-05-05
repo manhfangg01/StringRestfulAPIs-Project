@@ -56,6 +56,10 @@ public class Job {
     @JsonIgnoreProperties(value = { "jobs" })
     private List<Skill> skills;
 
+    @OneToMany(mappedBy = "job", fetch = FetchType.LAZY)
+    @JsonIgnore
+    List<Resume> resumes;
+
     @PrePersist
     public void handleBeforeCreation() {
         this.createdBy = SecurityUtil.getCurrentUserLogin().orElse("?");
