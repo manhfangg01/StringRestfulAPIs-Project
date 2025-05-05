@@ -14,18 +14,18 @@ import jakarta.annotation.PostConstruct;
 @Configuration
 public class StaticResourcesWebConfiguration implements WebMvcConfigurer {
 
-    @Value("${hoidanit.upload-file.base-path}")
-    private String basePath;
+    @Value("${hoidanit.upload-file.base-uri}")
+    private String baseURI;
 
     @PostConstruct
     public void init() {
-        System.out.println("Base path configured: " + basePath);
+        System.out.println("Base path configured: " + baseURI);
     }
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         // Thêm tiền tố '/' nếu cần thiết
-        String formattedPath = basePath;
+        String formattedPath = baseURI;
         if (!formattedPath.endsWith("/")) {
             formattedPath += "/";
         }
