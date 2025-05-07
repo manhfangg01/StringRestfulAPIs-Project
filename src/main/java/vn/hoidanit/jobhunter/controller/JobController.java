@@ -20,12 +20,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.GetMapping;
 
 @RestController
+@RequestMapping("/api/v1")
 public class JobController {
     private JobService jobService;
 
@@ -65,7 +67,7 @@ public class JobController {
             throw new ObjectNotExisted("Không tìm thấy job id = " + job.getId());
         }
 
-        return ResponseEntity.ok().body(this.jobService.updateJob(job));
+        return ResponseEntity.ok().body(this.jobService.updateJob(job, currentJob.get()));
     }
 
     @DeleteMapping("/jobs/{id}")

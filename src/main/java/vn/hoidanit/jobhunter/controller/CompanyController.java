@@ -57,23 +57,10 @@ public class CompanyController {
     }
 
     @GetMapping("/companies/{id}")
-    public ResponseEntity<CompanyResponseDTO> getOneCompany(@PathVariable("id") long id) throws ObjectNotExisted {
+    @ApiMessage("fetch company by id")
+    public ResponseEntity<Company> getOneCompany(@PathVariable("id") long id) throws ObjectNotExisted {
         Optional<Company> optionalCompany = this.companyService.handleFetchCompanyById(id);
-        CompanyResponseDTO companyResponse = new CompanyResponseDTO();
-
-        if (optionalCompany.isEmpty()) {
-            throw new ObjectNotExisted("Công ty không tồn tại");
-        } else {
-            Company realCompany = optionalCompany.get();
-            companyResponse.setId(realCompany.getId());
-            companyResponse.setName(realCompany.getName());
-            companyResponse.setDescription(realCompany.getDescription());
-            companyResponse.setAddress(realCompany.getAddress());
-            companyResponse.setLogo(realCompany.getLogo());
-            companyResponse.setCreatedAt(realCompany.getCreatedAt());
-            companyResponse.setUpdatedAt(realCompany.getUpdatedAt());
-        }
-        return ResponseEntity.ok(companyResponse);
+        return ResponseEntity.ok().body(optionalCompany.get());
     }
 
     @PutMapping("/companies")

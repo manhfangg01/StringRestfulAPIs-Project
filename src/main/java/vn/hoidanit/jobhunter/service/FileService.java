@@ -1,6 +1,7 @@
 package vn.hoidanit.jobhunter.service;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -72,34 +73,11 @@ public class FileService {
     }
 
     public InputStreamResource getResource(String fileName, String folder)
-            throws URISyntaxException, IOException {
+            throws URISyntaxException, FileNotFoundException {
+        URI uri = new URI(baseURI + folder + "/" + fileName);
+        Path path = Paths.get(uri);
 
-        // Validate filename để tránh Path Traversal
-        if (fileName.contains("..")) {
-            throw new SecurityException("Tên file không hợp lệ");
-        }
-
-        // Tạo đường dẫn đầy đủ
-        Path path = Paths.get(baseURI + folder + "/" + fileName);
-
-        // Kiểm tra file tồn tại và có thể đọc
-        if (!Files.exists(path) || !Files.isRegularFile(path)) {
-            throw new FileNotFoundException("Không tìm thấy file: " + fileName);
-        }
-
-        // Mở stream và trả về InputStreamResource
-        InputStream inputStream = Files.newInputStream(path);
-        return new InputStreamResource(inputStream) {
-            @Override
-            public String getFilename() {
-                return fileName;
-            }
-
-            @Override
-            public long contentLength() throws IOException {
-                return Files.size(path);
-            }
-        };
+        File file = new File(path.toString());
+        return new InputStreamResource(new FileInputStream(file));
     }
-
 }
