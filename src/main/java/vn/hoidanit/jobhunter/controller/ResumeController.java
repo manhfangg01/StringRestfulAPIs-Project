@@ -73,7 +73,7 @@ public class ResumeController {
     @ApiMessage("Create a new Resume")
     public ResponseEntity<ResCreateResume> createResume(@Valid @RequestBody Resume resume) throws ObjectNotExisted {
         // Check validation
-        if (this.resumeService.checkResumeExistByUserAndJob(resume)) {
+        if (!this.resumeService.checkResumeExistByUserAndJob(resume)) {
             throw new ObjectNotExisted("JobId or UserId Not Found");
         }
         Resume savedResume = this.resumeService.handleSaveResume(resume);

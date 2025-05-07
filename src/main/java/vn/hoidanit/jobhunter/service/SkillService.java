@@ -9,6 +9,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import vn.hoidanit.jobhunter.domain.Skill;
+import vn.hoidanit.jobhunter.domain.response.ResultPaginationDTO;
 import vn.hoidanit.jobhunter.domain.response.SkillsAndMeta;
 import vn.hoidanit.jobhunter.repository.SkillRepository;
 
@@ -32,18 +33,18 @@ public class SkillService {
         return this.skillRepository.findAll();
     }
 
-    public SkillsAndMeta handleFetchAllSkillsWithSpecificationAndPagination(Specification<Skill> specification,
+    public ResultPaginationDTO handleFetchAllSkillsWithSpecificationAndPagination(Specification<Skill> specification,
             Pageable pageable) {
-        SkillsAndMeta skillsAndMeta = new SkillsAndMeta();
+        ResultPaginationDTO skillsAndMeta = new ResultPaginationDTO();
         Page<Skill> skillPage = this.skillRepository.findAll(specification, pageable);
         List<Skill> skills = skillPage.getContent();
-        SkillsAndMeta.Meta meta = new SkillsAndMeta.Meta();
+        ResultPaginationDTO.Meta meta = new ResultPaginationDTO.Meta();
         meta.setPage(skillPage.getNumber() + 1); // PageNumber bắt đầu từ 0
         meta.setPageSize(skillPage.getSize());
         meta.setPages(skillPage.getTotalPages());
         meta.setTotal(skillPage.getTotalElements()); // Không trừ 1
         skillsAndMeta.setMeta(meta);
-        skillsAndMeta.setSkills(skills);
+        skillsAndMeta.setResult(skills);
         return skillsAndMeta;
 
     }

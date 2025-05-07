@@ -34,7 +34,8 @@ public class SecurityConfiguration {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
         String[] whiteList = { "/", "/api/users", "api/v1/auth/login", "api/v1/register",
-                "api/v1/users", "api/v1/auth/refresh", "/storage/**", "api/v1/companies/**", "api/v1/jobs/**" };
+                "api/v1/users", "api/v1/auth/refresh", "/storage/**", "api/v1/companies/**", "api/v1/jobs/**",
+                "api/v1/files" };
         http
                 .csrf(c -> c.disable()) // Ở mô hình stateless không dùng token "csrf"
                 .cors(c -> c.configurationSource(config.corsConfigurationSource())) // Sử dụng cấu hình

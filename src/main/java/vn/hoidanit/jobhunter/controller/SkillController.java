@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.turkraft.springfilter.boot.Filter;
 
 import vn.hoidanit.jobhunter.domain.Skill;
+import vn.hoidanit.jobhunter.domain.response.ResultPaginationDTO;
 import vn.hoidanit.jobhunter.domain.response.SkillsAndMeta;
 import vn.hoidanit.jobhunter.service.SkillService;
 import vn.hoidanit.jobhunter.util.annotation.ApiMessage;
@@ -37,7 +38,7 @@ public class SkillController {
 
     @GetMapping("/skills")
     @ApiMessage("Fetch tất cả kĩ năng")
-    public ResponseEntity<SkillsAndMeta> getAllSkills(@Filter Specification<Skill> spec, Pageable pageable) {
+    public ResponseEntity<ResultPaginationDTO> getAllSkills(@Filter Specification<Skill> spec, Pageable pageable) {
         return ResponseEntity.ok()
                 .body(this.skillService.handleFetchAllSkillsWithSpecificationAndPagination(spec, pageable));
     }
