@@ -59,7 +59,7 @@ public class AuthController {
 
         if (currentUserDB != null) {
             ResLoginDTO.UserLogin userLogin = new ResLoginDTO.UserLogin(currentUserDB.getId(),
-                    currentUserDB.getEmail(), currentUserDB.getName());
+                    currentUserDB.getEmail(), currentUserDB.getName(), currentUserDB.getRole());
             res.setUser(userLogin);
         }
         String accessToken = this.securityUtil.createAccessToken(authentication.getName(), res);
@@ -94,6 +94,7 @@ public class AuthController {
             userLogin.setId(currentUserDB.getId());
             userLogin.setEmail(currentUserDB.getEmail());
             userLogin.setName(currentUserDB.getName());
+            userLogin.setRole(currentUserDB.getRole());
             userGetAccount.setUser(userLogin);
 
         }
@@ -128,7 +129,7 @@ public class AuthController {
         ResLoginDTO res = new ResLoginDTO();
         if (user != null) {
             ResLoginDTO.UserLogin userLogin = new ResLoginDTO.UserLogin(user.getId(),
-                    user.getEmail(), user.getName());
+                    user.getEmail(), user.getName(), user.getRole());
             res.setUser(userLogin);
         }
 

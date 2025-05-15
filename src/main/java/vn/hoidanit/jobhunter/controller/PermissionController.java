@@ -72,6 +72,8 @@ public class PermissionController {
         }
         this.permissionService.delete(id);
         return ResponseEntity.ok(null);
+        // Do permission bị sử hữu bởi role cho nên mỗi khi xóa permission phải xóa cả
+        // trong bảng role_permission nữa
     }
 
 }

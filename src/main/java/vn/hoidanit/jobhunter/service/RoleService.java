@@ -11,23 +11,18 @@ import org.springframework.stereotype.Service;
 import vn.hoidanit.jobhunter.controller.ResumeController;
 import vn.hoidanit.jobhunter.domain.Permission;
 import vn.hoidanit.jobhunter.domain.Role;
-import vn.hoidanit.jobhunter.domain.Skill;
 import vn.hoidanit.jobhunter.domain.response.ResultPaginationDTO;
 import vn.hoidanit.jobhunter.repository.PermissionRepository;
 import vn.hoidanit.jobhunter.repository.RoleRepository;
 
 @Service
 public class RoleService {
-
-    private final ResumeController resumeController;
     private final RoleRepository roleRepository;
     private final PermissionRepository permissionRepository;
 
-    public RoleService(RoleRepository roleRepository, PermissionRepository permissionRepository,
-            ResumeController resumeController) {
+    public RoleService(RoleRepository roleRepository, PermissionRepository permissionRepository) {
         this.roleRepository = roleRepository;
         this.permissionRepository = permissionRepository;
-        this.resumeController = resumeController;
     }
 
     public Optional<Role> handleFindRoleByName(String name) {

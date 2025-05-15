@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import vn.hoidanit.jobhunter.domain.Role;
 
 @Getter
 @Setter
@@ -20,8 +21,10 @@ public class ResLoginDTO {
     @NoArgsConstructor
     public static class UserLogin {
         private long id;
-        String email;
-        String name;
+        private String email;
+        private String name;
+        private Role role;
+
     }
 
     @Getter
@@ -32,4 +35,15 @@ public class ResLoginDTO {
         private UserLogin user;
 
     }
+
+    @Getter
+    @Setter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class UserInsideToken {
+        private long id;
+        private String email;
+        private String name;
+    }
+
 }

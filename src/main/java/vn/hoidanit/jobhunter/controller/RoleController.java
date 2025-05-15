@@ -24,7 +24,6 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -57,6 +56,8 @@ public class RoleController {
         if (this.roleService.handleFindRoleById(role.getId()).isEmpty()) {
             throw new ObjectNotExisted("Role " + role.getId() + " không tồn tại");
         }
+
+        // Không check name do có thể có case chỉ update Permission không update name
 
         return ResponseEntity.status(HttpStatus.OK).body(this.roleService.update(role));
     }

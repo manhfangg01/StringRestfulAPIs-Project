@@ -27,6 +27,7 @@ import vn.hoidanit.jobhunter.service.UserService;
 import vn.hoidanit.jobhunter.util.annotation.ApiMessage;
 import vn.hoidanit.jobhunter.util.error.EmailExisted;
 import vn.hoidanit.jobhunter.util.error.IdInvalidException;
+import vn.hoidanit.jobhunter.util.error.ObjectCollapsed;
 import vn.hoidanit.jobhunter.util.error.ObjectNotExisted;
 
 import org.springframework.web.bind.annotation.PutMapping;
@@ -35,15 +36,10 @@ import org.springframework.web.bind.annotation.PutMapping;
 @RequestMapping("/api/v1")
 public class UserController {
     private final UserService userService;
-    private final PasswordEncoder passwordEncoder;
-    private final CompanyService companyService;
-    // private final ApiService apiService;
 
-    public UserController(UserService userService, PasswordEncoder passwordEncoder, CompanyService companyService) {
+    public UserController(UserService userService) {
         this.userService = userService;
-        this.passwordEncoder = passwordEncoder;
-        // this.apiService = apiService;
-        this.companyService = companyService;
+
     }
 
     @GetMapping("users")
@@ -90,72 +86,18 @@ public class UserController {
             throw new EmailExisted("Email tài khoản bạn tạo đã tồn tại trong hệ thống");
         }
 
-        // Tạo user mới
-        User newUser = new User();
-        newUser.setName(postManUser.getName());
-        newUser.setEmail(postManUser.getEmail());
-        newUser.setPassword(passwordEncoder.encode(postManUser.getPassword()));
-        newUser.setAge(postManUser.getAge());
-        newUser.setGender(postManUser.getGender());
-        newUser.setAddress(postManUser.getAddress());
-        newUser.setCompany(companyService.handleFetchCompanyById(postManUser.getCompany().getId()).isPresent()
-                ? companyService.handleFetchCompanyById(postManUser.getCompany()
-                        .getId()).get()
-                : null);
-
-        // Set các trường metadata
-        newUser.setCreatedAt(Instant.now());
-        newUser.setUpdatedAt(Instant.now());
-        newUser.setCreatedBy("SYSTEM"); // Hoặc lấy từ authentication
-        newUser.setUpdatedBy("SYSTEM");
-
-        // Lưu user
-        this.userService.handleSaveUser(newUser);
-
-        ResUserDTO userDTO = new ResUserDTO();
-        ResUserDTO.CompanyDTO companyDTO = new ResUserDTO.CompanyDTO();
-        companyDTO.setId(newUser.getCompany() != null ? newUser.getCompany().getId() : -1);
-        companyDTO.setName(newUser.getCompany() != null ? newUser.getCompany().getName() : "");
-        userDTO.setEmail(newUser.getEmail());
-        userDTO.setAddress(newUser.getAddress());
-        userDTO.setAge(newUser.getAge());
-        userDTO.setGender(newUser.getGender());
-        userDTO.setName(newUser.getName());
-        userDTO.setId(newUser.getId());
-        userDTO.setUpdatedAt(Instant.now());
-        userDTO.setCompany(companyDTO);
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(userDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).body(this.userService.create(postManUser));
     }
 
     @PutMapping("/users")
     @ApiMessage("Update user successful")
-    public ResponseEntity<ResUpdateUserDTO> updateUser(@RequestBody ResUpdateUserDTO updatedUser)
+    public ResponseEntity<ResUpdateUserDTO> updateUser(@RequestBody User updatedUser)
             throws ObjectNotExisted {
-        Optional<User> optionalUser = this.userService.findUserById(updatedUser.getId());
-        if (optionalUser.isPresent()) {
-            User realUser = optionalUser.get();
-
-            realUser.setAddress(updatedUser.getAddress());
-            realUser.setAge(updatedUser.getAge());
-            realUser.setGender(updatedUser.getGender());
-            realUser.setName(updatedUser.getName());
-            realUser.setUpdatedAt(Instant.now());
-            realUser.setCompany(companyService.handleFetchCompanyById(updatedUser.getCompany().getId()).isPresent()
-                    ? companyService.handleFetchCompanyById(updatedUser.getCompany().getId()).get()
-                    : null);
-
-            ResUpdateUserDTO.CompanyDTO companyDTO = new ResUpdateUserDTO.CompanyDTO();
-            companyDTO.setId(realUser.getCompany() != null ? realUser.getCompany().getId() : -1);
-            companyDTO.setName(realUser.getCompany() != null ? realUser.getCompany().getName() : "");
-            updatedUser.setCompany(companyDTO);
-
-            this.userService.handleSaveUser(realUser);
-            return ResponseEntity.ok(updatedUser);
-        } else {
-            throw new ObjectNotExisted(
-                    "User với " + updatedUser.getId() + " không tồn tại trong hệ thống");
+        if (this.userService.findUserById(updatedUser.getId()).isEmpty()) {
+            throw new ObjectNotExisted("user: " + updatedUser.getId() + " không tồn tại");
         }
+
+        return ResponseEntity.ok(this.userService.update(updatedUser));
 
     }
 
