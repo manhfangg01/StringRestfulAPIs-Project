@@ -1,6 +1,6 @@
 package vn.hoidanit.jobhunter.repository;
 
-import java.util.Optional;
+import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -11,4 +11,6 @@ import vn.hoidanit.jobhunter.domain.Permission;
 @Repository
 public interface PermissionRepository extends JpaRepository<Permission, Long>, JpaSpecificationExecutor<Permission> {
     public boolean existsByModuleAndApiPathAndMethod(String module, String apiPath, String method);
+
+    public List<Permission> findByIdIn(List<Long> perId);
 }

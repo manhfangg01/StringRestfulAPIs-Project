@@ -49,4 +49,13 @@ public class PermissionService {
         resJobsAndMeta.setMeta(meta);
         return resJobsAndMeta;
     }
+
+    public void delete(long id) {
+        // delete all roles that own this permission (role_permission)
+        Optional<Permission> optionalPermission = this.permissionRepository.findById(id);
+        Permission currentPermission = optionalPermission.get();
+        currentPermission.getRoles().forEach(role -> role.getPermissions().remove(currentPermission));
+        // delete permission in DB
+        this.permissionRepository.delete(currentPermission);
+    }
 }

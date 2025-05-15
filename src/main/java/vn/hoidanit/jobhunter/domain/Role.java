@@ -45,7 +45,7 @@ public class Role {
     // II. Một khi xóa role thì sẽ cùng lúc xóa tất cả các permission
 
     @JsonIgnoreProperties(value = { "roles" })
-    @JoinTable(name = "permission_role", joinColumns = @JoinColumn(name = "role_id"), inverseJoinColumns = @JoinColumn(name = "permission_id"))
+    @JoinTable(name = "role_permission", joinColumns = @JoinColumn(name = "role_id"), inverseJoinColumns = @JoinColumn(name = "permission_id"))
     private List<Permission> permissions;
 
     @PrePersist

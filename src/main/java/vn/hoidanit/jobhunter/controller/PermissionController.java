@@ -4,16 +4,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.turkraft.springfilter.boot.Filter;
 
-import vn.hoidanit.jobhunter.domain.Job;
 import vn.hoidanit.jobhunter.domain.Permission;
-import vn.hoidanit.jobhunter.domain.request.ReqUpdatedPermission;
 import vn.hoidanit.jobhunter.domain.response.ResultPaginationDTO;
 import vn.hoidanit.jobhunter.service.PermissionService;
 import vn.hoidanit.jobhunter.util.annotation.ApiMessage;
 import vn.hoidanit.jobhunter.util.error.ObjectCollapsed;
 import vn.hoidanit.jobhunter.util.error.ObjectNotExisted;
-
-import java.net.http.HttpResponse.ResponseInfo;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -23,8 +19,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.PathVariable;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -67,6 +64,14 @@ public class PermissionController {
 
     }
 
-    // Permission không cần xóa vì
+    @DeleteMapping("/permissions/{id}")
+    @ApiMessage("delete a permission")
+    public ResponseEntity<Void> deleteRole(@PathVariable("id") long id) throws ObjectNotExisted {
+        if (this.permissionService.handleFetchPermissionById(id).isEmpty()) {
+            throw new ObjectNotExisted("permission " + id + " không tồn tại");
+        }
+        this.permissionService.delete(id);
+        return ResponseEntity.ok(null);
+    }
 
 }
