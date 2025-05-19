@@ -11,6 +11,8 @@ import vn.hoidanit.jobhunter.util.annotation.ApiMessage;
 import vn.hoidanit.jobhunter.util.error.ObjectCollapsed;
 import vn.hoidanit.jobhunter.util.error.ObjectNotExisted;
 
+import java.util.Optional;
+
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
@@ -52,14 +54,13 @@ public class PermissionController {
 
     @PutMapping("/permissions")
     public ResponseEntity<Permission> updatePermission(@RequestBody Permission per)
-            throws ObjectNotExisted, ObjectCollapsed {
-        if (this.permissionService.handleFetchPermissionById(per.getId()).isEmpty()) {
+            throws ObjectNotExisted {
+        Optional<Permission> optionalPermission = this.permissionService.handleFetchPermissionById(per.getId());
+        if (optionalPermission.isEmpty()) {
 
             throw new ObjectNotExisted("Permission với id = " + per.getId() + " không tồn tại");
         }
-        if (this.permissionService.isPermissionExist(per)) {
-            throw new ObjectCollapsed("Permission đã tồn tại");
-        }
+        per.setCreatedAt(optionalPermission.get().getCreatedAt());
         Permission updatedPermission = this.permissionService.handleSavePermission(per);
         return ResponseEntity.ok(updatedPermission);
 
