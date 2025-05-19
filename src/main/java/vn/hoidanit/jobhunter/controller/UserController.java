@@ -1,6 +1,5 @@
 package vn.hoidanit.jobhunter.controller;
 
-import java.time.Instant;
 import java.util.Optional;
 
 import org.springframework.data.domain.Pageable;
@@ -22,12 +21,10 @@ import vn.hoidanit.jobhunter.domain.User;
 import vn.hoidanit.jobhunter.domain.response.ResUpdateUserDTO;
 import vn.hoidanit.jobhunter.domain.response.ResUserDTO;
 import vn.hoidanit.jobhunter.domain.response.ResultPaginationDTO;
-import vn.hoidanit.jobhunter.service.CompanyService;
 import vn.hoidanit.jobhunter.service.UserService;
 import vn.hoidanit.jobhunter.util.annotation.ApiMessage;
 import vn.hoidanit.jobhunter.util.error.EmailExisted;
 import vn.hoidanit.jobhunter.util.error.IdInvalidException;
-import vn.hoidanit.jobhunter.util.error.ObjectCollapsed;
 import vn.hoidanit.jobhunter.util.error.ObjectNotExisted;
 
 import org.springframework.web.bind.annotation.PutMapping;
@@ -36,9 +33,11 @@ import org.springframework.web.bind.annotation.PutMapping;
 @RequestMapping("/api/v1")
 public class UserController {
     private final UserService userService;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserController(UserService userService) {
+    public UserController(UserService userService, PasswordEncoder passwordEncoder) {
         this.userService = userService;
+        this.passwordEncoder = passwordEncoder;
 
     }
 
@@ -85,6 +84,8 @@ public class UserController {
         if (userService.checkExistedEmail(postManUser.getEmail())) {
             throw new EmailExisted("Email tài khoản bạn tạo đã tồn tại trong hệ thống");
         }
+        String hashPassword = passwordEncoder.encode(postManUser.getPassword());
+        postManUser.setPassword(hashPassword);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(this.userService.create(postManUser));
     }

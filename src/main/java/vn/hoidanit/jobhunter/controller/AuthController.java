@@ -9,20 +9,24 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import jakarta.validation.Valid;
 import vn.hoidanit.jobhunter.domain.User;
 import vn.hoidanit.jobhunter.domain.request.ReqLoginDTO;
 import vn.hoidanit.jobhunter.domain.response.ResLoginDTO;
+import vn.hoidanit.jobhunter.domain.response.ResUserDTO;
 import vn.hoidanit.jobhunter.service.UserService;
 import vn.hoidanit.jobhunter.util.SecurityUtil;
 import vn.hoidanit.jobhunter.util.annotation.ApiMessage;
 import vn.hoidanit.jobhunter.util.error.IdInvalidException;
+import vn.hoidanit.jobhunter.util.error.ObjectCollapsed;
 import vn.hoidanit.jobhunter.util.error.ObjectNotExisted;
 
 import org.springframework.web.bind.annotation.CookieValue;
@@ -35,15 +39,28 @@ public class AuthController {
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
     private final SecurityUtil securityUtil;
     private final UserService userService;
+    private final PasswordEncoder passwordEncoder;
 
     @Value("${hoidanit.jwt.refresh_token-validity-in-seconds}")
     private long refreshTokenExpiration;
 
     public AuthController(AuthenticationManagerBuilder authenticationManagerBuilder, SecurityUtil securityUtil,
-            UserService userService) {
+            UserService userService, PasswordEncoder passwordEncoder) {
         this.authenticationManagerBuilder = authenticationManagerBuilder;
         this.securityUtil = securityUtil;
         this.userService = userService;
+        this.passwordEncoder = passwordEncoder;
+    }
+
+    @PostMapping("/auth/register")
+    public ResponseEntity<ResUserDTO> register(@Valid @RequestBody User postManUser) throws ObjectCollapsed {
+        if (this.userService.checkExistedEmail(postManUser.getEmail())) {
+            throw new ObjectCollapsed("Tài khoản này đã tồn tại");
+        }
+        String hashPassword = passwordEncoder.encode(postManUser.getPassword());
+        postManUser.setPassword(hashPassword);
+        return ResponseEntity.status(HttpStatus.CREATED).body(this.userService.create(postManUser));
+
     }
 
     @PostMapping("/auth/login")
@@ -51,6 +68,30 @@ public class AuthController {
         // Nạp input gồm username/password vào Security
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
                 loginDTO.getUsername(), loginDTO.getPassword());
+
+        User user = this.userService.handleGetUserByUserName(loginDTO.getUsername());
+        if (user == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found");
+        }
+
+        // 2. Debug chi tiết
+        System.out.println("\n=== DEBUG PASSWORD ===");
+        System.out.println("DB Password: " + user.getPassword());
+        System.out.println("Input Password (raw): " + loginDTO.getPassword());
+
+        // 3. Kiểm tra mật khẩu BẰNG PHƯƠNG PHÁP ĐÚNG
+        boolean isMatch = passwordEncoder.matches(loginDTO.getPassword(), user.getPassword());
+        System.out.println("Password Match Result: " + isMatch);
+
+        if (!isMatch) {
+            // 4. Debug thêm: Tạo hash mới để so sánh thủ công
+            String newHash = passwordEncoder.encode("123456");
+            System.out.println("New Hash of '123456': " + newHash);
+            System.out.println("Compare with DB Hash: " + user.getPassword().equals(newHash));
+
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid password");
+        }
+
         Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
 
         SecurityContextHolder.getContext().setAuthentication(authentication);

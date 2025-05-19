@@ -20,11 +20,21 @@ public class UserCustomDetail implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        System.out.println("=== TRYING TO LOAD USER: " + username + " ===");
+
         vn.hoidanit.jobhunter.domain.User user = this.userService.handleGetUserByUserName(username);
         if (user == null) {
+            System.out.println("=== USER NOT FOUND IN DB ===");
             throw new UsernameNotFoundException("User not found");
         }
-        return new org.springframework.security.core.userdetails.User(user.getEmail(),
+
+        System.out.println("=== USER FOUND ===");
+        System.out.println("Email: " + user.getEmail());
+        System.out.println("Password: " + user.getPassword());
+        System.out.println("CreatedAt: " + user.getCreatedAt());
+
+        return new org.springframework.security.core.userdetails.User(
+                user.getEmail(),
                 user.getPassword(),
                 Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")));
     }

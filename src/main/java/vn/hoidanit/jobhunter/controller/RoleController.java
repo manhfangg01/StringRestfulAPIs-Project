@@ -12,6 +12,7 @@ import vn.hoidanit.jobhunter.util.error.ObjectCollapsed;
 import vn.hoidanit.jobhunter.util.error.ObjectNotExisted;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -24,6 +25,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -35,9 +37,21 @@ public class RoleController {
     }
 
     @GetMapping("/roles")
-    public ResponseEntity<ResultPaginationDTO> getRole(@Filter Specification<Role> spec, Pageable pageable) {
+    @ApiMessage("fetch all roles")
+    public ResponseEntity<ResultPaginationDTO> getRoles(@Filter Specification<Role> spec, Pageable pageable) {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(this.roleService.handleFetchAllRolesWithSpecificationAndPagination(spec, pageable));
+    }
+
+    @GetMapping("/roles/{id}")
+    @ApiMessage("Fetch one roles with id")
+    public ResponseEntity<Role> getRole(@PathVariable("id") long id) throws ObjectNotExisted {
+        Optional<Role> role = roleService.handleFindRoleById(id);
+        if (role.isEmpty()) {
+            throw new ObjectNotExisted("Không tim thấy role với id: " + id);
+        }
+
+        return ResponseEntity.ok().body(role.get());
     }
 
     @PostMapping("/roles")

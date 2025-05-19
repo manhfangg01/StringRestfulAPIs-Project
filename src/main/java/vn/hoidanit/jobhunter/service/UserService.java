@@ -42,7 +42,6 @@ public class UserService {
     }
 
     public ResUserDTO create(User user) {
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
 
         // Check Company
         if (user.getCompany() != null) {

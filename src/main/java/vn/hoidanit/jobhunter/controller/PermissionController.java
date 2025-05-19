@@ -54,6 +54,7 @@ public class PermissionController {
     public ResponseEntity<Permission> updatePermission(@RequestBody Permission per)
             throws ObjectNotExisted, ObjectCollapsed {
         if (this.permissionService.handleFetchPermissionById(per.getId()).isEmpty()) {
+
             throw new ObjectNotExisted("Permission với id = " + per.getId() + " không tồn tại");
         }
         if (this.permissionService.isPermissionExist(per)) {
