@@ -133,6 +133,7 @@ public class ResumeService {
         mt.setPages(pageResume.getTotalPages());
         mt.setTotal(pageResume.getTotalElements());
         rs.setMeta(mt);
+        rs.setResult(pageResume.getContent());
         return rs;
     }
 
