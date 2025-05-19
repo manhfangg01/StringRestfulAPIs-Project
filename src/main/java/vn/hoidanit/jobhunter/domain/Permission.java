@@ -17,12 +17,14 @@ import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import vn.hoidanit.jobhunter.util.SecurityUtil;
 
 @Entity
 @Getter
 @Setter
+@NoArgsConstructor
 @Table(name = "permissions")
 public class Permission {
     @Id
@@ -40,6 +42,16 @@ public class Permission {
     private Instant updatedAt;
     private String createdBy;
     private String updatedBy;
+
+    public Permission(String name,
+            String apiPath,
+            String method,
+            String module) {
+        this.name = name;
+        this.apiPath = apiPath;
+        this.method = method;
+        this.module = module;
+    }
 
     @ManyToMany(fetch = FetchType.LAZY, mappedBy = "permissions") // Nhiều Permissions thuộc nhiều Role chính là bên
                                                                   // được sở hữu
