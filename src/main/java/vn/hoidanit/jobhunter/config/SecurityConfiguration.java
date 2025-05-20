@@ -2,6 +2,7 @@ package vn.hoidanit.jobhunter.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -33,9 +34,9 @@ public class SecurityConfiguration {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
-        String[] whiteList = { "/", "/api/users", "api/v1/auth/login", "api/v1/auth/register",
-                "api/v1/users", "api/v1/auth/refresh", "/storage/**", "api/v1/companies/**", "api/v1/jobs/**",
-                "api/v1/files" };
+        String[] whiteList = { "/",
+                "/api/v1/auth/login", "/api/v1/auth/refresh", "/api/v1/auth/register",
+                "/storage/**" };
         http
                 .csrf(c -> c.disable()) // Ở mô hình stateless không dùng token "csrf"
                 .cors(c -> c.configurationSource(config.corsConfigurationSource())) // Sử dụng cấu hình
@@ -43,9 +44,13 @@ public class SecurityConfiguration {
                         authz ->
                         // prettier-ignore
                         authz
-                                .requestMatchers(
-                                        whiteList)
-                                .permitAll()
+                                // Đối người dùng chưa đăng nhập
+                                .requestMatchers(whiteList).permitAll() // vào trang chủ, login, refresh, sign in
+                                .requestMatchers(HttpMethod.GET, "/api/v1/companies").permitAll() // vào xem các công ty
+                                .requestMatchers(HttpMethod.GET, "/api/v1/jobs").permitAll() // Các job hiện tại
+                                .requestMatchers(HttpMethod.GET, "/api/v1/skills").permitAll() // Các kĩ năng cần thiêt
+                                // RequestMatchers được khuyên dùng bởi vì nó có thể thay thế các matcher khác
+                                // vốn đã bị loại bỏ -》 tăng tính nhất quán khi code
                                 .anyRequest()
                                 .authenticated())
                 .oauth2ResourceServer((oauth2) -> oauth2.jwt(Customizer.withDefaults())

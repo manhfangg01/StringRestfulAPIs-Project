@@ -224,7 +224,7 @@ const ResumePage = () => {
             },
           }}
           rowSelection={false}
-          toolBarRender={(_action: any, _rows: any): any => {
+          toolBarRender={(_action, _rows): any => {
             return <></>;
           }}
         />

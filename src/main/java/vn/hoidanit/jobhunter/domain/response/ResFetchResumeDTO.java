@@ -42,7 +42,7 @@ public class ResFetchResumeDTO {
     @AllArgsConstructor
     public static class JobResume {
         private long id;
-        private String jobName;
+        private String name;
     }
 
 }
